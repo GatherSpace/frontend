@@ -327,3 +327,90 @@ baseUrl - ws://localhost:3000/ws
     }
 
 Disconnect - Disconnect from the websocket server
+
+## Creating the interface
+
+# Pages Required
+
+1. Landing Page
+
+   - contains info about the project (get from readme.md)
+   - should be stylish and clean
+   - can go to signup page or login page from here
+
+2. Signup Page
+
+   - contains signup form
+   - should be stylish and clean
+   - should have a back button to go back to landing page
+   - also can move to login page from here
+
+3. Login Page
+
+   - contains login form
+   - should be stylish and clean
+   - should have a back button to go back to landing page
+   - also can move to signup page from here
+
+4. Dashboard Page
+
+   - contains all the pre defined maps
+   - contains all the spaces created by the user
+   - should be stylish and clean
+   - should have a logout button take me to the landing page
+   - should have create space button to create a new space
+   - should have create map button to create a new map
+   - when i click on a space it should join me in
+
+5. Create Space Page
+
+   - contains create space form
+   - should be stylish and clean
+   - should have a back button to go back to dashboard page
+   - should show a list of maps to choose from
+   - or empty (no element)
+   - after creating a space it should take me to the dashboard page
+   - where i can see all the spaces created by me
+
+6. Create Map Page
+
+   - thumbnail shoudl be the background of the map (uploaded by the user)
+   - should be stylish and clean
+   - should have a back button to go back to dashboard page
+   - should show a list of elements to choose from
+   - or empty (no element)
+   - should have a create button to create the map
+   - after creating a map it should take me to the dashboard page
+   - where i can see all the maps created by everyone
+
+7. Create Element Page
+
+   - contains create element form
+   - should be stylish and clean
+   - should have a back button to go back to dashboard page
+
+8. Edit Space Page or Edit Map page(add element to the space or map)
+   - here we can place the elements in the space or map
+   - should be stylish and clean
+9. Space Page
+
+   - takes you to full screen view of the space
+   - thumbnail image is drawn on the canvas
+   - elements are drawn on the canvas
+   - avatars are drawn on the canvas
+   - when i use arrow keys it should move the avatar
+   - when i use w,a,s,d it should move the avatar
+
+10. User Profile Page
+
+    - contains user profile info
+    - should be stylish and clean
+    - choose from the avatars options
+
+11. Avatar creation Page
+
+- contains avatar creation form
+- should be stylish and clean
+- should have a back button to go back to user profile page
+
+thats all i have for now move can be added later
