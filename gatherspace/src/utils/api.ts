@@ -1,5 +1,12 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import Cookies from "js-cookie";
+import {
+  AuthResponse,
+  Element,
+  Avatar,
+  Space,
+  SpaceElement,
+} from "../types/api.types";
 
 const BASE_URL = "http://localhost:8080/api";
 
@@ -16,22 +23,50 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+class ApiError extends Error {
+  constructor(public status: number, message: string) {
+    super(message);
+  }
+}
+
+const handleApiError = (error: AxiosError) => {
+  if (error.response) {
+    throw new ApiError(error.response.status, error.response.data as string);
+  }
+  throw new Error("Network error");
+};
+
 export const auth = {
   signup: async (
     username: string,
     password: string,
     role: "Admin" | "User"
-  ) => {
-    const response = await api.post("/signup", { username, password, role });
-    return response.data;
+  ): Promise<AuthResponse> => {
+    try {
+      const response = await api.post<AuthResponse>("/signup", {
+        username,
+        password,
+        role,
+      });
+      return response.data;
+    } catch (error) {
+      return handleApiError(error as AxiosError);
+    }
   },
-  signin: async (username: string, password: string) => {
-    const response = await api.post("/signin", { username, password });
-    Cookies.set("token", response.data.token, {
-      secure: true,
-      sameSite: "strict",
-    });
-    return response.data;
+  signin: async (username: string, password: string): Promise<AuthResponse> => {
+    try {
+      const response = await api.post<AuthResponse>("/signin", {
+        username,
+        password,
+      });
+      Cookies.set("token", response.data.token, {
+        secure: true,
+        sameSite: "strict",
+      });
+      return response.data;
+    } catch (error) {
+      return handleApiError(error as AxiosError);
+    }
   },
   signout: () => {
     Cookies.remove("token");
@@ -39,21 +74,30 @@ export const auth = {
 };
 
 export const adminApi = {
-  createElement: async (element: {
-    imageUrl: string;
-    width: number;
-    height: number;
-    staticValue: boolean;
-  }) => {
-    const response = await api.post("/admin/element", element);
-    return response.data;
+  createElement: async (
+    element: Omit<Element, "id">
+  ): Promise<{ id: string }> => {
+    try {
+      const response = await api.post("/admin/element", element);
+      return response.data;
+    } catch (error) {
+      return handleApiError(error as AxiosError);
+    }
   },
   updateElement: async (id: string, imageUrl: string) => {
-    await api.put(`/admin/element/${id}`, { imageUrl });
+    try {
+      await api.put(`/admin/element/${id}`, { imageUrl });
+    } catch (error) {
+      return handleApiError(error as AxiosError);
+    }
   },
   createAvatar: async (avatar: { imageUrl: string; name: string }) => {
-    const response = await api.post("/admin/avatar", avatar);
-    return response.data;
+    try {
+      const response = await api.post("/admin/avatar", avatar);
+      return response.data;
+    } catch (error) {
+      return handleApiError(error as AxiosError);
+    }
   },
   createMap: async (map: {
     thumbnail: string;
@@ -61,46 +105,82 @@ export const adminApi = {
     name: string;
     defaultElements: Array<{ elementId: string; x: number; y: number }>;
   }) => {
-    const response = await api.post("/admin/map", map);
-    return response.data;
+    try {
+      const response = await api.post("/admin/map", map);
+      return response.data;
+    } catch (error) {
+      return handleApiError(error as AxiosError);
+    }
   },
   fetchElements: async () => {
-    const response = await api.get("/elements");
-    return response.data;
+    try {
+      const response = await api.get("/elements");
+      return response.data;
+    } catch (error) {
+      return handleApiError(error as AxiosError);
+    }
   },
 };
 
 export const userApi = {
-  updateMetadata: async (avatarId: string) => {
-    await api.post("/user/metadata", { avatarId });
+  updateMetadata: async (avatarId: string): Promise<void> => {
+    try {
+      await api.post("/user/metadata", { avatarId });
+    } catch (error) {
+      return handleApiError(error as AxiosError);
+    }
   },
   fetchAvatars: async () => {
-    const response = await api.get("user/avatars");
-    return response.data;
+    try {
+      const response = await api.get("user/avatars");
+      return response.data;
+    } catch (error) {
+      return handleApiError(error as AxiosError);
+    }
   },
   fetchBulkUserData: async (userIds: string[]) => {
-    const response = await api.get(
-      `/user/bulk?${userIds.map((id) => "ids=" + id).join("&")}`
-    );
-    return response.data;
+    try {
+      const response = await api.get(
+        `/user/bulk?${userIds.map((id) => "ids=" + id).join("&")}`
+      );
+      return response.data;
+    } catch (error) {
+      return handleApiError(error as AxiosError);
+    }
   },
 };
 
 export const spaceApi = {
-  fetchSpaceDetails: async (spaceId: string) => {
-    const response = await api.get(`/space/${spaceId}`);
-    return response.data;
+  fetchSpaceDetails: async (spaceId: string): Promise<Space> => {
+    try {
+      const response = await api.get<Space>(`/space/${spaceId}`);
+      return response.data;
+    } catch (error) {
+      return handleApiError(error as AxiosError);
+    }
   },
   createSpace: async (name: string, dimensions: string, mapId: string) => {
-    const response = await api.post("/space", { name, dimensions, mapId });
-    return response.data;
+    try {
+      const response = await api.post("/space", { name, dimensions, mapId });
+      return response.data;
+    } catch (error) {
+      return handleApiError(error as AxiosError);
+    }
   },
   deleteSpace: async (spaceId: string) => {
-    await api.delete(`/space/${spaceId}`);
+    try {
+      await api.delete(`/space/${spaceId}`);
+    } catch (error) {
+      return handleApiError(error as AxiosError);
+    }
   },
   fetchUserSpaces: async () => {
-    const response = await api.get("space/all");
-    return response.data;
+    try {
+      const response = await api.get("space/all");
+      return response.data;
+    } catch (error) {
+      return handleApiError(error as AxiosError);
+    }
   },
   addElementToSpace: async (
     spaceId: string,
@@ -108,53 +188,61 @@ export const spaceApi = {
     x: number,
     y: number
   ) => {
-    const response = await api.post(`/space/element`, {
-      elementId,
-      spaceId,
-      x,
-      y,
-    });
-    return response.data;
+    try {
+      const response = await api.post(`/space/element`, {
+        elementId,
+        spaceId,
+        x,
+        y,
+      });
+      return response.data;
+    } catch (error) {
+      return handleApiError(error as AxiosError);
+    }
   },
   deleteElementFromSpace: async (spaceId: string) => {
-    // i need to send data in the body
-    await api.delete("space/element", { data: { spaceId } });
+    try {
+      await api.delete("space/element", { data: { spaceId } });
+    } catch (error) {
+      return handleApiError(error as AxiosError);
+    }
   },
-
-  // 9. /user/metadata/bulk?ids=userId&ids=userId1&ids=userId2.. - GET
 };
 
 // websocket
 
-export const websocketApi = {
-  joinSpace: async (spaceId: string, token: string) => {
-    return true;
-  },
-  updatePosition: async (
-    spaceId: string,
-    position: { x: number; y: number }
-  ) => {
-    return true;
-  },
-};
-
 // Export convenience functions for components
 
-export const fetchAvatars = userApi.fetchAvatars; //4
-export const updateMetadata = userApi.updateMetadata; //5
-export const fetchBulkUserData = userApi.fetchBulkUserData; //6
-
-export const createElement = adminApi.createElement; //7
-export const updateElement = adminApi.updateElement; //8
-export const createAvatar = adminApi.createAvatar; //11
-export const createMap = adminApi.createMap; //12
-export const fetchElements = adminApi.fetchElements; //2
-
-export const createSpace = spaceApi.createSpace; //9
-export const deleteSpace = spaceApi.deleteSpace; //10
-export const addElementToSpace = spaceApi.addElementToSpace; //13
-export const deleteElementFromSpace = spaceApi.deleteElementFromSpace; //14
-export const fetchUserSpaces = spaceApi.fetchUserSpaces; //1
-export const fetchSpaceDetails = spaceApi.fetchSpaceDetails; //3
+export const {
+  fetchAvatars,
+  updateMetadata,
+  fetchBulkUserData,
+  createElement,
+  updateElement,
+  createAvatar,
+  createMap,
+  fetchElements,
+  createSpace,
+  deleteSpace,
+  addElementToSpace,
+  deleteElementFromSpace,
+  fetchUserSpaces,
+  fetchSpaceDetails,
+} = {
+  fetchAvatars: userApi.fetchAvatars,
+  updateMetadata: userApi.updateMetadata,
+  fetchBulkUserData: userApi.fetchBulkUserData,
+  createElement: adminApi.createElement,
+  updateElement: adminApi.updateElement,
+  createAvatar: adminApi.createAvatar,
+  createMap: adminApi.createMap,
+  fetchElements: adminApi.fetchElements,
+  createSpace: spaceApi.createSpace,
+  deleteSpace: spaceApi.deleteSpace,
+  addElementToSpace: spaceApi.addElementToSpace,
+  deleteElementFromSpace: spaceApi.deleteElementFromSpace,
+  fetchUserSpaces: spaceApi.fetchUserSpaces,
+  fetchSpaceDetails: spaceApi.fetchSpaceDetails,
+};
 
 export default api;

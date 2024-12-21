@@ -3,15 +3,13 @@ import {
   Button,
   FormControl,
   FormLabel,
-  Heading,
   Input,
-  VStack,
   useToast,
 } from "@chakra-ui/react";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { websocketApi } from "../../utils/api";
+import { wsService } from "../../services/WebSocketService";
 
 const JoinSpace = () => {
   const navigate = useNavigate();
@@ -19,7 +17,11 @@ const JoinSpace = () => {
   const [spaceId, setSpaceId] = useState("");
 
   const joinSpaceMutation = useMutation({
-    mutationFn: () => websocketApi.joinSpace(spaceId, "sdfdsfs"),
+    mutationFn: async () => {
+      wsService.connect();
+      wsService.joinSpace(spaceId);
+      return true;
+    },
     onSuccess: () => {
       toast({
         title: "Joined space successfully!",
@@ -40,10 +42,9 @@ const JoinSpace = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!spaceId.trim()) {
+    if (!spaceId) {
       toast({
-        title: "Space ID required",
-        description: "Please enter a space ID",
+        title: "Space ID is required",
         status: "error",
         duration: 3000,
       });
@@ -53,11 +54,10 @@ const JoinSpace = () => {
   };
 
   return (
-    <Box maxW="container.md" mx="auto">
-      <Heading mb={6}>Join Space</Heading>
+    <Box maxW="md" mx="auto" mt={8}>
       <form onSubmit={handleSubmit}>
-        <VStack spacing={4} align="stretch">
-          <FormControl isRequired>
+        <Box borderWidth={1} borderRadius="lg" p={6}>
+          <FormControl>
             <FormLabel>Space ID</FormLabel>
             <Input
               value={spaceId}
@@ -68,14 +68,16 @@ const JoinSpace = () => {
           </FormControl>
 
           <Button
+            mt={4}
             type="submit"
             colorScheme="blue"
             isLoading={joinSpaceMutation.isPending}
             loadingText="Joining..."
+            width="full"
           >
             Join Space
           </Button>
-        </VStack>
+        </Box>
       </form>
     </Box>
   );
