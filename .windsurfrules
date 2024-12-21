@@ -1,0 +1,25 @@
+For knowing about the API, looking into instruction.md file
+
+Always pass correct data to the API and correct bearer token
+
+Use the secure way to save the token in the browser
+
+import neccesary libraries with typescript support
+
+inside gatherspace folder there is vite react typescript template use that template to build upon the project
+
+Always we correct folder sturcture so it is easy to navigate and integrate more futures
+
+## Info about the project
+
+It is called gatherspace it is a virtual space(a 2d environment) where you can walk around and interact with others(not included in api as of now)
+
+There will be maps(2d space) with those you can create a space where multiple people can join and walk around and those things will be updated to you
+
+you can place objects in the space it can be static(can't walk over ) or non static (can walk over)
+
+everyone can be a avatar in the space and there are multiple avatars options to choose from
+
+we need to to have ability to create avatars , create element , create maps from the ui
+
+users can also modify the spaces they create from the map
