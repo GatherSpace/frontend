@@ -1,8 +1,8 @@
-import { WebSocketMessage } from '../types/api.types';
+import { WebSocketMessage } from "../types/api.types";
 
 export class WebSocketService {
   private ws: WebSocket | null = null;
-  private readonly baseUrl: string = 'ws://localhost:3000/ws';
+  private readonly baseUrl: string = "ws://localhost:3000/ws";
 
   connect() {
     this.ws = new WebSocket(this.baseUrl);
@@ -17,28 +17,32 @@ export class WebSocketService {
   }
 
   joinSpace(spaceId: string) {
-    if (!this.ws) throw new Error('WebSocket not connected');
-    
-    this.ws.send(JSON.stringify({
-      type: 'join_space',
-      payload: { spaceId }
-    }));
+    if (!this.ws) throw new Error("WebSocket not connected");
+
+    this.ws.send(
+      JSON.stringify({
+        type: "join_space",
+        payload: { spaceId },
+      })
+    );
   }
 
   updatePosition(x: number, y: number) {
-    if (!this.ws) throw new Error('WebSocket not connected');
-    
-    this.ws.send(JSON.stringify({
-      type: 'update_position',
-      payload: { x, y }
-    }));
+    if (!this.ws) throw new Error("WebSocket not connected");
+
+    this.ws.send(
+      JSON.stringify({
+        type: "update_position",
+        payload: { x, y },
+      })
+    );
   }
 
   private setupEventListeners() {
     if (!this.ws) return;
 
     this.ws.onopen = () => {
-      console.log('WebSocket Connected');
+      console.log("WebSocket Connected");
     };
 
     this.ws.onmessage = (event) => {
@@ -47,27 +51,27 @@ export class WebSocketService {
     };
 
     this.ws.onerror = (error) => {
-      console.error('WebSocket Error:', error);
+      console.error("WebSocket Error:", error);
     };
 
     this.ws.onclose = () => {
-      console.log('WebSocket Disconnected');
+      console.log("WebSocket Disconnected");
     };
   }
 
   private handleMessage(message: WebSocketMessage) {
     switch (message.type) {
-      case 'user_joined':
-        console.log('User joined:', message.payload);
+      case "user_joined":
+        console.log("User joined:", message.payload);
         break;
-      case 'user_left':
-        console.log('User left:', message.payload);
+      case "user_left":
+        console.log("User left:", message.payload);
         break;
-      case 'position_update':
-        console.log('Position update:', message.payload);
+      case "position_update":
+        console.log("Position update:", message.payload);
         break;
       default:
-        console.log('Unknown message type:', message);
+        console.log("Unknown message type:", message);
     }
   }
 }
