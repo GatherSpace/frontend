@@ -3,7 +3,6 @@ import { User } from "../types";
 import { auth } from "../utils/api";
 
 interface AuthState {
-  user: User | null;
   isAuthenticated: boolean;
   signin: (username: string, password: string) => Promise<void>;
   signup: (
@@ -15,12 +14,11 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
   isAuthenticated: false,
   signin: async (username: string, password: string) => {
     try {
       const data = await auth.signin(username, password);
-      set({ isAuthenticated: true, user: data.user });
+      set({ isAuthenticated: true });
     } catch (error) {
       console.error("Signin failed:", error);
       throw error;
@@ -33,7 +31,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   ) => {
     try {
       const data = await auth.signup(username, password, role);
-      set({ user: { userId: data.userId, username, role } });
+      set({ isAuthenticated: false });
     } catch (error) {
       console.error("Signup failed:", error);
       throw error;
@@ -41,6 +39,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
   signout: () => {
     auth.signout();
-    set({ user: null, isAuthenticated: false });
+    set({ isAuthenticated: false });
   },
 }));

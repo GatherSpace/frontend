@@ -36,3 +36,15 @@ export interface Position {
   x: number;
   y: number;
 }
+
+export interface Space {
+  id: string;
+  name: string;
+  dimensions: string;
+  mapId: string;
+  elements: {
+    elementId: string;
+    x: number;
+    y: number;
+  }[];
+}

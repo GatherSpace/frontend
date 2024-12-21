@@ -2,49 +2,46 @@ import {
   Box,
   Flex,
   Button,
-  Heading,
-  HStack,
   useColorModeValue,
-} from '@chakra-ui/react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../../store/useAuthStore';
+  Stack,
+  useColorMode,
+  Container,
+  Image,
+} from "@chakra-ui/react";
+import { MoonIcon, SunIcon } from "@chakra-ui/icons";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../store/useAuthStore";
 
 export default function Navbar() {
+  const { colorMode, toggleColorMode } = useColorMode();
   const navigate = useNavigate();
   const signout = useAuthStore((state) => state.signout);
-  const user = useAuthStore((state) => state.user);
 
   const handleSignOut = () => {
     signout();
-    navigate('/auth/signin');
+    navigate("/auth/signin");
   };
 
   return (
-    <Box bg={useColorModeValue('white', 'gray.900')} px={4} shadow="sm">
-      <Flex h={16} alignItems="center" justifyContent="space-between">
-        <Heading size="md" as={Link} to="/space">
-          GatherSpace
-        </Heading>
+    <Box bg={useColorModeValue("white", "gray.800")} px={4} shadow="sm">
+      <Container maxW="container.xl">
+        <Flex h={16} alignItems="center" justifyContent="space-between">
+          <Link to="/dashboard">
+            <Image src="/logo.png" alt="GatherSpace Logo" h="40px" />
+          </Link>
 
-        <HStack spacing={4}>
-          {user?.role === 'Admin' && (
-            <>
-              <Button as={Link} to="/space/create-map" variant="ghost">
-                Create Map
+          <Flex alignItems="center">
+            <Stack direction="row" spacing={7}>
+              <Button onClick={toggleColorMode}>
+                {colorMode === "light" ? <MoonIcon /> : <SunIcon />}
               </Button>
-              <Button as={Link} to="/space/elements" variant="ghost">
-                Elements
+              <Button onClick={handleSignOut} variant="ghost">
+                Sign Out
               </Button>
-              <Button as={Link} to="/space/avatars" variant="ghost">
-                Avatars
-              </Button>
-            </>
-          )}
-          <Button onClick={handleSignOut} colorScheme="red" variant="outline">
-            Sign Out
-          </Button>
-        </HStack>
-      </Flex>
+            </Stack>
+          </Flex>
+        </Flex>
+      </Container>
     </Box>
   );
 }

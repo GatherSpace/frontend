@@ -6,46 +6,46 @@ import {
   Heading,
   Input,
   VStack,
-  useToast
-} from '@chakra-ui/react';
-import { useMutation } from '@tanstack/react-query';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { userApi } from '../../utils/api';
+  useToast,
+} from "@chakra-ui/react";
+import { useMutation } from "@tanstack/react-query";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { websocketApi } from "../../utils/api";
 
 const JoinSpace = () => {
   const navigate = useNavigate();
   const toast = useToast();
-  const [spaceId, setSpaceId] = useState('');
+  const [spaceId, setSpaceId] = useState("");
 
   const joinSpaceMutation = useMutation({
-    mutationFn: () => userApi.joinSpace(spaceId),
+    mutationFn: () => websocketApi.joinSpace(spaceId, "sdfdsfs"),
     onSuccess: () => {
       toast({
-        title: 'Joined space successfully!',
-        status: 'success',
-        duration: 3000
+        title: "Joined space successfully!",
+        status: "success",
+        duration: 3000,
       });
       navigate(`/space/${spaceId}`);
     },
     onError: (error: Error) => {
       toast({
-        title: 'Failed to join space',
+        title: "Failed to join space",
         description: error.message,
-        status: 'error',
-        duration: 3000
+        status: "error",
+        duration: 3000,
       });
-    }
+    },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!spaceId.trim()) {
       toast({
-        title: 'Space ID required',
-        description: 'Please enter a space ID',
-        status: 'error',
-        duration: 3000
+        title: "Space ID required",
+        description: "Please enter a space ID",
+        status: "error",
+        duration: 3000,
       });
       return;
     }

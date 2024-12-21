@@ -1,9 +1,9 @@
-import { Box, useToast } from '@chakra-ui/react';
-import { useQuery } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { fetchSpaceDetails, updatePosition } from '../../utils/api';
-import GameCanvas from './GameCanvas';
+import { Box, useToast } from "@chakra-ui/react";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
+import { fetchSpaceDetails, websocketApi } from "../../utils/api";
+import GameCanvas from "./GameCanvas";
 
 interface Position {
   x: number;
@@ -18,15 +18,17 @@ const SpaceView = () => {
   const eventSourceRef = useRef<EventSource | null>(null);
 
   const { data: space } = useQuery({
-    queryKey: ['space', spaceId],
-    queryFn: () => fetchSpaceDetails(spaceId!)
+    queryKey: ["space", spaceId],
+    queryFn: () => fetchSpaceDetails(spaceId!),
   });
 
   useEffect(() => {
     if (!spaceId) return;
 
     // Connect to SSE endpoint for real-time updates
-    const eventSource = new EventSource(`http://localhost:3000/api/space/${spaceId}/events`);
+    const eventSource = new EventSource(
+      `http://localhost:3000/api/space/${spaceId}/events`
+    );
     eventSourceRef.current = eventSource;
 
     eventSource.onmessage = (event) => {
@@ -41,24 +43,24 @@ const SpaceView = () => {
 
   const handleServerEvent = (event: any) => {
     switch (event.type) {
-      case 'user-joined':
+      case "user-joined":
         toast({
-          title: 'User joined',
+          title: "User joined",
           description: `${event.payload.username} joined the space`,
-          status: 'info'
+          status: "info",
         });
         break;
-      case 'user-left':
+      case "user-left":
         toast({
-          title: 'User left',
+          title: "User left",
           description: `${event.payload.username} left the space`,
-          status: 'info'
+          status: "info",
         });
         break;
-      case 'movement':
+      case "movement":
         // Update other user's position
         break;
-      case 'movement-rejected':
+      case "movement-rejected":
         // Reset position if server rejected the movement
         setPosition({ x: event.payload.x, y: event.payload.y });
         break;
@@ -69,16 +71,16 @@ const SpaceView = () => {
     const newPosition = { ...position };
 
     switch (e.key) {
-      case 'ArrowUp':
+      case "ArrowUp":
         newPosition.y -= 1;
         break;
-      case 'ArrowDown':
+      case "ArrowDown":
         newPosition.y += 1;
         break;
-      case 'ArrowLeft':
+      case "ArrowLeft":
         newPosition.x -= 1;
         break;
-      case 'ArrowRight':
+      case "ArrowRight":
         newPosition.x += 1;
         break;
       default:
@@ -90,19 +92,19 @@ const SpaceView = () => {
 
     // Send position update to server
     try {
-      await updatePosition(spaceId!, newPosition);
+      await websocketApi.updatePosition(spaceId!, newPosition);
     } catch (error) {
       toast({
-        title: 'Movement failed',
-        description: 'Failed to update position',
-        status: 'error'
+        title: "Movement failed",
+        description: "Failed to update position",
+        status: "error",
       });
     }
   };
 
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [position]);
 
   if (!space) return null;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -10,13 +10,13 @@ import {
   Text,
   Link as ChakraLink,
   useToast,
-} from '@chakra-ui/react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../../store/useAuthStore';
+} from "@chakra-ui/react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../store/useAuthStore";
 
 export default function SignIn() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const signin = useAuthStore((state) => state.signin);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -25,17 +25,17 @@ export default function SignIn() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard');
+      navigate("/dashboard");
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username || !password) {
       toast({
-        title: 'Error',
-        description: 'Please fill in all fields',
-        status: 'error',
+        title: "Error",
+        description: "Please fill in all fields",
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
@@ -48,9 +48,9 @@ export default function SignIn() {
       // Navigation will be handled by useEffect
     } catch (error) {
       toast({
-        title: 'Error signing in',
-        description: 'Please check your credentials and try again',
-        status: 'error',
+        title: "Error signing in",
+        description: "Please check your credentials and try again",
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
@@ -63,7 +63,7 @@ export default function SignIn() {
     <Box p={8} bg="white" rounded="lg" shadow="base">
       <VStack spacing={4} as="form" onSubmit={handleSubmit}>
         <Heading size="lg">Sign In to GatherSpace</Heading>
-        
+
         <FormControl isRequired>
           <FormLabel>Username</FormLabel>
           <Input
@@ -94,7 +94,7 @@ export default function SignIn() {
         </Button>
 
         <Text>
-          Don't have an account?{' '}
+          Don't have an account?{" "}
           <ChakraLink as={Link} to="/auth/signup" color="blue.500">
             Sign Up
           </ChakraLink>
