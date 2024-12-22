@@ -7,18 +7,21 @@ import {
   Image,
   Stack,
   Text,
-  useColorModeValue
-} from '@chakra-ui/react';
-import { Link as RouterLink } from 'react-router-dom';
+  useColorModeValue,
+  Link as ChakraLink,
+} from "@chakra-ui/react";
+import logo from "../assets/logo.png";
+import preview from "../assets/preview_gatherspace.png";
+import { Link as RouterLink } from "react-router-dom";
 
 const LandingLayout = () => {
   return (
     <Box>
       {/* Navigation */}
-      <Box as="nav" bg={useColorModeValue('white', 'gray.800')} shadow="sm">
+      <Box as="nav" bg={useColorModeValue("white", "gray.800")} shadow="sm">
         <Container maxW="container.xl">
           <Flex h={16} alignItems="center" justifyContent="space-between">
-            <Image src="/logo.png" alt="GatherSpace" h="40px" />
+            <Image src={logo} alt="GatherSpace" h="60px" />
             <Stack direction="row" spacing={4}>
               <Button as={RouterLink} to="/auth/signin" variant="ghost">
                 Sign In
@@ -32,16 +35,16 @@ const LandingLayout = () => {
       </Box>
 
       {/* Hero Section */}
-      <Box bg={useColorModeValue('gray.50', 'gray.900')} py={20}>
+      <Box bg={useColorModeValue("gray.50", "gray.900")} py={20}>
         <Container maxW="container.xl">
           <Stack
-            direction={{ base: 'column', lg: 'row' }}
+            direction={{ base: "column", lg: "row" }}
             spacing={8}
             alignItems="center"
           >
             <Stack flex={1} spacing={6}>
               <Heading
-                fontSize={{ base: '3xl', md: '4xl', lg: '5xl' }}
+                fontSize={{ base: "3xl", md: "4xl", lg: "5xl" }}
                 fontWeight="bold"
                 lineHeight="shorter"
               >
@@ -55,12 +58,16 @@ const LandingLayout = () => {
                   Connect & Interact
                 </Text>
               </Heading>
-              <Text fontSize="xl" color={useColorModeValue('gray.600', 'gray.300')}>
-                GatherSpace is a virtual environment where you can create custom spaces,
-                interact with others, and build unique experiences. Perfect for virtual
-                meetups, team collaborations, or just hanging out with friends.
+              <Text
+                fontSize="xl"
+                color={useColorModeValue("gray.600", "gray.300")}
+              >
+                GatherSpace is a virtual environment where you can create custom
+                spaces, interact with others, and build unique experiences.
+                Perfect for virtual meetups, team collaborations, or just
+                hanging out with friends.
               </Text>
-              <Stack direction={{ base: 'column', sm: 'row' }} spacing={4}>
+              <Stack direction={{ base: "column", sm: "row" }} spacing={8}>
                 <Button
                   as={RouterLink}
                   to="/auth/signup"
@@ -72,12 +79,13 @@ const LandingLayout = () => {
                 </Button>
                 <Button
                   as={RouterLink}
-                  to="/demo"
+                  to="https://github.com/Hari-krishna-tech/gatherspace-be"
                   size="lg"
                   variant="outline"
                   px={8}
+                  target="_blank"
                 >
-                  View Demo
+                  Github
                 </Button>
               </Stack>
             </Stack>
@@ -85,10 +93,10 @@ const LandingLayout = () => {
               flex={1}
               position="relative"
               w="full"
-              maxW={{ base: '400px', lg: '600px' }}
+              maxW={{ base: "400px", lg: "600px" }}
             >
               <Image
-                src="/hero-image.png"
+                src={preview}
                 alt="Virtual Space Preview"
                 w="full"
                 rounded="lg"
@@ -107,30 +115,30 @@ const LandingLayout = () => {
               Features
             </Heading>
             <Stack
-              direction={{ base: 'column', lg: 'row' }}
+              direction={{ base: "column", lg: "row" }}
               spacing={8}
               justify="center"
             >
               {features.map((feature, index) => (
                 <Box
                   key={index}
-                  bg={useColorModeValue('white', 'gray.800')}
+                  bg={useColorModeValue("white", "gray.800")}
                   p={8}
                   rounded="lg"
                   shadow="base"
                   flex={1}
-                  maxW={{ base: 'full', lg: '320px' }}
+                  maxW={{ base: "full", lg: "320px" }}
                 >
                   <Stack spacing={4} align="center" textAlign="center">
                     <Box
                       p={2}
-                      bg={useColorModeValue('blue.50', 'blue.900')}
+                      bg={useColorModeValue("blue.50", "blue.900")}
                       rounded="full"
                     >
                       {feature.icon}
                     </Box>
                     <Heading size="md">{feature.title}</Heading>
-                    <Text color={useColorModeValue('gray.600', 'gray.300')}>
+                    <Text color={useColorModeValue("gray.600", "gray.300")}>
                       {feature.description}
                     </Text>
                   </Stack>
@@ -142,20 +150,28 @@ const LandingLayout = () => {
       </Box>
 
       {/* Footer */}
-      <Box bg={useColorModeValue('gray.50', 'gray.900')} py={8}>
+      <Box bg={useColorModeValue("gray.50", "gray.900")} py={8}>
         <Container maxW="container.xl">
           <Stack
-            direction={{ base: 'column', md: 'row' }}
+            direction={{ base: "column", md: "row" }}
             justify="space-between"
             align="center"
             spacing={4}
           >
-            <Text>© 2024 GatherSpace. All rights reserved.</Text>
+            <Text> 2024 GatherSpace. All rights reserved.</Text>
             <Stack direction="row" spacing={6}>
-              <Button variant="link">About</Button>
-              <Button variant="link">Contact</Button>
-              <Button variant="link">Privacy</Button>
-              <Button variant="link">Terms</Button>
+              <ChakraLink as={RouterLink} to="/about">
+                <Button variant="link">About</Button>
+              </ChakraLink>
+              <ChakraLink as={RouterLink} to="/contact">
+                <Button variant="link">Contact</Button>
+              </ChakraLink>
+              <ChakraLink as={RouterLink} to="/privacy">
+                <Button variant="link">Privacy</Button>
+              </ChakraLink>
+              <ChakraLink as={RouterLink} to="/terms">
+                <Button variant="link">Terms</Button>
+              </ChakraLink>
             </Stack>
           </Stack>
         </Container>
@@ -166,35 +182,35 @@ const LandingLayout = () => {
 
 const features = [
   {
-    title: 'Custom Spaces',
+    title: "Custom Spaces",
     description:
-      'Create and customize your own virtual spaces with different layouts and themes.',
+      "Create and customize your own virtual spaces with different layouts and themes.",
     icon: (
       <Box as="span" fontSize="3xl" role="img" aria-label="customize">
         🎨
       </Box>
-    )
+    ),
   },
   {
-    title: 'Real-time Interaction',
+    title: "Real-time Interaction",
     description:
-      'Interact with others in real-time through movement and proximity-based interactions.',
+      "Interact with others in real-time through movement and proximity-based interactions.",
     icon: (
       <Box as="span" fontSize="3xl" role="img" aria-label="interact">
         👥
       </Box>
-    )
+    ),
   },
   {
-    title: 'Interactive Elements',
+    title: "Interactive Elements",
     description:
-      'Add interactive elements and objects to make your space more engaging and functional.',
+      "Add interactive elements and objects to make your space more engaging and functional.",
     icon: (
       <Box as="span" fontSize="3xl" role="img" aria-label="elements">
         🎮
       </Box>
-    )
-  }
+    ),
+  },
 ];
 
 export default LandingLayout;
