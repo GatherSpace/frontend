@@ -12,6 +12,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { Link, useNavigate } from "react-router-dom";
+
 import { useAuthStore } from "../../store/useAuthStore";
 
 export default function SignIn() {
@@ -60,9 +61,9 @@ export default function SignIn() {
   };
 
   return (
-    <Box p={8} bg="white" rounded="lg" shadow="base">
+    <Box px={24} bg="white" rounded="lg" shadow="base">
       <VStack spacing={4} as="form" onSubmit={handleSubmit}>
-        <Heading size="lg">Sign In to GatherSpace</Heading>
+        <Heading size="lg">Sign In</Heading>
 
         <FormControl isRequired>
           <FormLabel>Username</FormLabel>

@@ -35,7 +35,7 @@ const LandingLayout = () => {
       </Box>
 
       {/* Hero Section */}
-      <Box bg={useColorModeValue("gray.50", "gray.900")} py={20}>
+      <Box bg={useColorModeValue("gray.50", "gray.900")} py={20} px={15}>
         <Container maxW="container.xl">
           <Stack
             direction={{ base: "column", lg: "row" }}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   Box,
   Button,
@@ -11,14 +11,14 @@ import {
   Link as ChakraLink,
   useToast,
   Select,
-} from '@chakra-ui/react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../../store/useAuthStore';
+} from "@chakra-ui/react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../store/useAuthStore";
 
 export default function SignUp() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'Admin' | 'User'>('User');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState<"Admin" | "User">("User");
   const [isLoading, setIsLoading] = useState(false);
   const signup = useAuthStore((state) => state.signup);
   const navigate = useNavigate();
@@ -30,17 +30,17 @@ export default function SignUp() {
     try {
       await signup(username, password, role);
       toast({
-        title: 'Account created successfully',
-        status: 'success',
+        title: "Account created successfully",
+        status: "success",
         duration: 3000,
         isClosable: true,
       });
-      navigate('/auth/signin');
+      navigate("/auth/signin");
     } catch (error) {
       toast({
-        title: 'Error creating account',
-        description: 'Please try again with different credentials',
-        status: 'error',
+        title: "Error creating account",
+        description: "Please try again with different credentials",
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
@@ -50,10 +50,10 @@ export default function SignUp() {
   };
 
   return (
-    <Box p={8} bg="white" rounded="lg" shadow="base">
+    <Box px={24} bg="white" rounded="lg" shadow="base">
       <VStack spacing={4} as="form" onSubmit={handleSubmit}>
-        <Heading size="lg">Create GatherSpace Account</Heading>
-        
+        <Heading size="lg">Sign Up</Heading>
+
         <FormControl isRequired>
           <FormLabel>Username</FormLabel>
           <Input
@@ -76,7 +76,7 @@ export default function SignUp() {
           <FormLabel>Role</FormLabel>
           <Select
             value={role}
-            onChange={(e) => setRole(e.target.value as 'Admin' | 'User')}
+            onChange={(e) => setRole(e.target.value as "Admin" | "User")}
           >
             <option value="User">User</option>
             <option value="Admin">Admin</option>
@@ -93,7 +93,7 @@ export default function SignUp() {
         </Button>
 
         <Text>
-          Already have an account?{' '}
+          Already have an account?{" "}
           <ChakraLink as={Link} to="/auth/signin" color="blue.500">
             Sign In
           </ChakraLink>

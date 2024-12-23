@@ -1,14 +1,18 @@
-import { Box, Container, Flex, Image } from '@chakra-ui/react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import SignIn from '../components/auth/SignIn';
-import SignUp from '../components/auth/SignUp';
+import { Box, Container, Flex, Image } from "@chakra-ui/react";
+import { Routes, Route, Navigate, Link } from "react-router-dom";
+import logo from "../assets/logo.png";
+import SignIn from "../components/auth/SignIn";
+import SignUp from "../components/auth/SignUp";
 
 const AuthLayout = () => {
   return (
-    <Box minH="100vh" bg="gray.50">
+    // center the content
+    <Box minH="100vh" bg="gray.50" minW="100vw">
       <Container maxW="container.sm" py={10}>
         <Flex direction="column" align="center" mb={8}>
-          <Image src="/logo.png" alt="GatherSpace Logo" h="60px" mb={4} />
+          <Link to="/">
+            <Image src={logo} alt="GatherSpace Logo" h="60px" mb={4} />
+          </Link>
         </Flex>
         <Box
           bg="white"
