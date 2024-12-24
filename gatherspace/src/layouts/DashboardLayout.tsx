@@ -5,16 +5,22 @@ import {
   Heading,
   Icon,
   Link,
+  Image,
   Stack,
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
 import { Link as RouterLink, Routes, Route, Navigate } from "react-router-dom";
-import { FiHome, FiUsers, FiMap } from "react-icons/fi";
+import { FiHome, FiUsers, FiMap, FiCircle, FiMapPin } from "react-icons/fi";
 import SpaceManager from "../components/space/SpaceManager";
 import CreateSpace from "../components/space/CreateSpace";
 import JoinSpace from "../components/space/JoinSpace";
-
+import logo from "../assets/logo.png";
+import CreateMap from "../components/Map/CreateMap";
+import CreateElement from "../components/element/CreateElement";
+import { LiaSortNumericUpAltSolid } from "react-icons/lia";
+import ListMap from "../components/Map/ListMap";
+import CreateAvatar from "../components/avatar/CreateAvatar";
 interface NavItemProps {
   icon: any;
   children: string;
@@ -23,7 +29,7 @@ interface NavItemProps {
 
 const NavItem = ({ icon, children, to }: NavItemProps) => {
   const activeBg = useColorModeValue("gray.100", "gray.700");
-  
+
   return (
     <Link
       as={RouterLink}
@@ -74,19 +80,25 @@ const DashboardLayout = () => {
         h="full"
       >
         <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
-          <Text fontSize="2xl" fontWeight="bold">
-            GatherSpace
-          </Text>
+          <Image src={logo} alt="GatherSpace Logo" h="60px" />
         </Flex>
         <Stack spacing={0}>
-          <NavItem icon={FiHome} to="/dashboard">
-            Overview
-          </NavItem>
-          <NavItem icon={FiMap} to="/dashboard/spaces">
+          <NavItem icon={FiHome} to="dashboard">
             My Spaces
           </NavItem>
-          <NavItem icon={FiUsers} to="/dashboard/join">
-            Join Space
+          <NavItem icon={FiMap} to="/dashboard/maps">
+            Map List
+          </NavItem>
+          <NavItem icon={FiCircle} to="/dashboard/element">
+            Create Element
+          </NavItem>
+
+          <NavItem icon={FiMapPin} to="/dashboard/createMap">
+            Create Map
+          </NavItem>
+
+          <NavItem icon={FiUsers} to="/dashboard/avatar">
+            Create Profile Avatar
           </NavItem>
         </Stack>
       </Box>
@@ -96,22 +108,11 @@ const DashboardLayout = () => {
         <Box as="main" p="4">
           <Container maxW="container.xl">
             <Routes>
-              <Route
-                index
-                element={
-                  <Box>
-                    <Heading size="lg" mb={6}>Welcome to GatherSpace!</Heading>
-                    <Stack spacing={6}>
-                      <Text fontSize="lg">
-                        Get started by creating a new space or joining an existing one.
-                      </Text>
-                    </Stack>
-                  </Box>
-                }
-              />
-              <Route path="spaces" element={<SpaceManager />} />
-              <Route path="spaces/create" element={<CreateSpace />} />
-              <Route path="join" element={<JoinSpace />} />
+              <Route index element={<SpaceManager />} />
+              <Route path="dashboard/maps" element={<ListMap />} />
+              <Route path="dashboard/element" element={<CreateElement />} />
+              <Route path="dashboard/createMap" element={<CreateMap />} />
+              <Route path="dashboard/avatar" element={<CreateAvatar />} />
             </Routes>
           </Container>
         </Box>

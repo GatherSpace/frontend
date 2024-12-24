@@ -1,12 +1,6 @@
 import axios, { AxiosError } from "axios";
 import Cookies from "js-cookie";
-import {
-  AuthResponse,
-  Element,
-  Avatar,
-  Space,
-  SpaceElement,
-} from "../types/api.types";
+import { Element, Avatar, Space, AuthResponse } from "../types/api.types";
 
 const BASE_URL = "http://localhost:8080/api";
 
@@ -174,10 +168,10 @@ export const spaceApi = {
       return handleApiError(error as AxiosError);
     }
   },
-  fetchUserSpaces: async () => {
+  fetchUserSpaces: async (): Promise<Space[]> => {
     try {
       const response = await api.get("space/all");
-      return response.data;
+      return response.data.spaces;
     } catch (error) {
       return handleApiError(error as AxiosError);
     }

@@ -9,13 +9,15 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { fetchUserSpaces } from "../../utils/api";
-import { Space } from "../../types";
+import { Space } from "../../types/api.types";
 
 const SpaceManager = () => {
   const { data: spaces, isLoading } = useQuery({
     queryKey: ["spaces"],
     queryFn: fetchUserSpaces,
   });
+
+  console.log("Spaces data:", spaces);
 
   return (
     <Box>

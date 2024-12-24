@@ -31,6 +31,7 @@ export interface Space {
   dimensions: string;
   thumbnail: string;
   creatorId: string;
+  mapId?: string;
   elements: SpaceElement[];
 }
 
@@ -40,7 +41,7 @@ export interface WebSocketMessage {
 }
 
 export interface SpaceJoinedResponse {
-  type: 'space-joined';
+  type: "space-joined";
   payload: {
     spawn: {
       x: number;
