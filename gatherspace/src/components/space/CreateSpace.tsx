@@ -3,56 +3,67 @@ import {
   Button,
   FormControl,
   FormLabel,
+  Grid,
   Heading,
   Input,
-  Select,
   VStack,
-  useToast
-} from '@chakra-ui/react';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { createMap, fetchElements } from '../../utils/api';
+  useToast,
+} from "@chakra-ui/react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { createSpace, getAllMaps } from "../../utils/api";
+import { Map } from "../../types/api.types";
+import MapComponent from "./MapComponent"; // Assuming MapComponent is in the same directory
 
 const CreateSpace = () => {
+  console.log("CreateSpace component rendered");
   const navigate = useNavigate();
   const toast = useToast();
+  const [maps, setMaps] = useState<Map[]>([]);
   const [formData, setFormData] = useState({
-    name: '',
-    dimensions: '',
-    thumbnail: '',
-    defaultElements: []
+    name: "",
+    dimensions: "",
+    mapId: "",
   });
 
-  const { data: elements } = useQuery({
-    queryKey: ['elements'],
-    queryFn: fetchElements
-  });
-
-  const createMapMutation = useMutation({
-    mutationFn: createMap,
-    onSuccess: () => {
-      toast({
-        title: 'Space created successfully!',
-        status: 'success',
-        duration: 3000
-      });
-      navigate('/space');
-    },
-    onError: (error) => {
-      toast({
-        title: 'Failed to create space',
-        description: error.message,
-        status: 'error',
-        duration: 3000
-      });
-    }
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    createMapMutation.mutate(formData);
+    try {
+      await createSpace(formData.name, formData.dimensions, formData.mapId);
+      toast({
+        title: "Space created successfully!",
+        status: "success",
+        duration: 3000,
+      });
+      setFormData({
+        name: "",
+        dimensions: "",
+        mapId: "",
+      });
+      navigate("/dashboard");
+    } catch (error: any) {
+      toast({
+        title: "Failed to create space",
+        description: error.message,
+        status: "error",
+        duration: 3000,
+      });
+      console.error("Error creating space:", error);
+    }
   };
+
+  useEffect(() => {
+    const fetchMaps = async () => {
+      try {
+        const maps = await getAllMaps();
+        setMaps(maps);
+      } catch (error) {
+        console.error("Error fetching maps:", error);
+      }
+    };
+    fetchMaps();
+  }, []);
 
   return (
     <Box maxW="container.md" mx="auto">
@@ -63,34 +74,49 @@ const CreateSpace = () => {
             <FormLabel>Space Name</FormLabel>
             <Input
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               placeholder="Enter space name"
             />
           </FormControl>
 
           <FormControl isRequired>
-            <FormLabel>Dimensions (width x height)</FormLabel>
+            <FormLabel>Dimensions</FormLabel>
             <Input
               value={formData.dimensions}
-              onChange={(e) => setFormData({ ...formData, dimensions: e.target.value })}
-              placeholder="e.g., 200x300"
+              onChange={(e) =>
+                setFormData({ ...formData, dimensions: e.target.value })
+              }
+              placeholder="Enter dimensions (e.g., 10x10)"
             />
           </FormControl>
 
           <FormControl isRequired>
-            <FormLabel>Thumbnail URL</FormLabel>
-            <Input
-              value={formData.thumbnail}
-              onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
-              placeholder="Enter thumbnail URL"
-            />
+            <FormLabel>Select Map</FormLabel>
+            <Grid
+              templateColumns="repeat(auto-fill, minmax(250px, 1fr))"
+              gap={4}
+            >
+              {maps.map((map) => (
+                <MapComponent
+                  key={map.id}
+                  map={map}
+                  isSelectable={true}
+                  isSelected={formData.mapId === map.id}
+                  onSelect={(selectedMapId) =>
+                    setFormData({ ...formData, mapId: selectedMapId })
+                  }
+                />
+              ))}
+            </Grid>
           </FormControl>
 
           <Button
             type="submit"
             colorScheme="blue"
-            isLoading={createMapMutation.isPending}
             loadingText="Creating..."
+            isDisabled={!formData.mapId}
           >
             Create Space
           </Button>

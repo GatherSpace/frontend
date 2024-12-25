@@ -17,6 +17,27 @@ export interface Avatar {
   name: string;
 }
 
+export interface MapElement {
+  id: string;
+  elementId: string;
+  mapId: string;
+  staticValue: boolean;
+  x: number;
+  y: number;
+}
+
+export interface Map {
+  id: string;
+  name: string;
+  dimensions?: string;
+  width?: number;
+  height?: number;
+  thumbnail: string;
+  creatorId: string;
+  mapId?: string;
+  MapElements: MapElement[];
+}
+
 export interface SpaceElement {
   id: string;
   elementId: string;
@@ -28,7 +49,9 @@ export interface SpaceElement {
 export interface Space {
   id: string;
   name: string;
-  dimensions: string;
+  dimensions?: string;
+  width?: number;
+  height?: number;
   thumbnail: string;
   creatorId: string;
   mapId?: string;
@@ -49,4 +72,8 @@ export interface SpaceJoinedResponse {
     };
     users: Array<{ id: number }>;
   };
+}
+
+export interface createSpaceResponse {
+  id: string;
 }

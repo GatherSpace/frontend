@@ -1,6 +1,13 @@
 import axios, { AxiosError } from "axios";
 import Cookies from "js-cookie";
-import { Element, Avatar, Space, AuthResponse } from "../types/api.types";
+import {
+  Element,
+  Avatar,
+  Space,
+  AuthResponse,
+  Map,
+  createSpaceResponse,
+} from "../types/api.types";
 
 const BASE_URL = "http://localhost:8080/api";
 
@@ -153,7 +160,11 @@ export const spaceApi = {
       return handleApiError(error as AxiosError);
     }
   },
-  createSpace: async (name: string, dimensions: string, mapId: string) => {
+  createSpace: async (
+    name: string,
+    dimensions: string,
+    mapId: string
+  ): Promise<createSpaceResponse> => {
     try {
       const response = await api.post("/space", { name, dimensions, mapId });
       return response.data;
@@ -161,7 +172,7 @@ export const spaceApi = {
       return handleApiError(error as AxiosError);
     }
   },
-  deleteSpace: async (spaceId: string) => {
+  deleteSpace: async (spaceId: string): Promise<void> => {
     try {
       await api.delete(`/space/${spaceId}`);
     } catch (error) {
@@ -201,6 +212,14 @@ export const spaceApi = {
       return handleApiError(error as AxiosError);
     }
   },
+  getAllMaps: async (): Promise<Map[]> => {
+    try {
+      const response = await api.get("/maps");
+      return response.data.maps;
+    } catch (error) {
+      return handleApiError(error as AxiosError);
+    }
+  },
 };
 
 // websocket
@@ -222,6 +241,7 @@ export const {
   deleteElementFromSpace,
   fetchUserSpaces,
   fetchSpaceDetails,
+  getAllMaps,
 } = {
   fetchAvatars: userApi.fetchAvatars,
   updateMetadata: userApi.updateMetadata,
@@ -237,6 +257,7 @@ export const {
   deleteElementFromSpace: spaceApi.deleteElementFromSpace,
   fetchUserSpaces: spaceApi.fetchUserSpaces,
   fetchSpaceDetails: spaceApi.fetchSpaceDetails,
+  getAllMaps: spaceApi.getAllMaps,
 };
 
 export default api;

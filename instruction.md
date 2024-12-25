@@ -242,6 +242,31 @@ base url: http://localhost:3000/api
   ]
   }
 
+17. /maps - GET
+
+- response - {
+  "maps" : [
+  {
+  "id" : "mapId",
+  "thumbnail" : "thumbnailUrl",
+  "name" : "name",
+  "height": int,
+  "width": int,
+  "thumbnail" : "string",
+  "mapElements" : [
+  {
+  "id": "5c3aac14-de36-4134-af30-5b4733e1bc39",
+  "mapId": "ee944ab3-9846-4add-be16-877bf3473e0a",
+  "staticValue": false,
+  "elementId": "2325f63e-e389-410f-a924-0a01a256e02b",
+  "x": 20,
+  "y": 20
+  }
+  ]
+  }
+  ]
+  }
+
 Websocket endpoints
 
 baseUrl - ws://localhost:3000/ws

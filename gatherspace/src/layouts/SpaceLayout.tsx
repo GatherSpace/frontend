@@ -6,6 +6,7 @@ import CreateSpace from "../components/space/CreateSpace";
 import JoinSpace from "../components/space/JoinSpace";
 import SpaceView from "../components/game/SpaceView";
 import { useAuthStore } from "../store/useAuthStore";
+import EditSpace from "../components/space/EditSpace";
 
 const SpaceLayout = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -19,7 +20,7 @@ const SpaceLayout = () => {
       <Navbar />
       <Container maxW="container.xl" py={8}>
         <Routes>
-          <Route path="/" element={<SpaceManager />} />
+          <Route path="/edit-space/:spaceId" element={<EditSpace />} />
           <Route path="/create" element={<CreateSpace />} />
           <Route path="/join" element={<JoinSpace />} />
           <Route path="/:spaceId" element={<SpaceView />} />
