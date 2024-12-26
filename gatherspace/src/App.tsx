@@ -18,6 +18,7 @@ const queryClient = new QueryClient();
 
 interface ProtectedRouteProps {
   element: React.ReactElement;
+  path: string;
 }
 
 const ProtectedRoute = ({ element, path }: ProtectedRouteProps) => {
@@ -29,7 +30,12 @@ const ProtectedRoute = ({ element, path }: ProtectedRouteProps) => {
     return element;
 };
 
-const LoggedInCheck = ({ element, path }: any) => {
+interface LoggedInCheckProps {
+  element: React.ReactElement;
+  path: string;
+}
+
+const LoggedInCheck = ({ element, path }: LoggedInCheckProps) => {
   const isAuthenticated = Cookies.get("token");
 
   if (isAuthenticated != null && path === "/") {
