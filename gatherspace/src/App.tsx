@@ -20,20 +20,19 @@ interface ProtectedRouteProps {
   element: React.ReactElement;
 }
 
-const ProtectedRoute = ({ element }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ element, path }: ProtectedRouteProps) => {
   const isAuthenticated = Cookies.get("token");
 
-  if (!isAuthenticated) {
-    return <Navigate to="/auth/signin" replace />;
-  }
-
-  return element;
+    if (!isAuthenticated) {
+        return <Navigate to="/auth/signin" replace />;
+    }
+    return element;
 };
 
-const LoggedInCheck = ({ element }: any) => {
+const LoggedInCheck = ({ element, path }: any) => {
   const isAuthenticated = Cookies.get("token");
 
-  if (isAuthenticated != null) {
+  if (isAuthenticated != null && path === "/") {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -46,15 +45,18 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <Router>
           <Routes>
-            <Route path="/" element={LoggedInCheck(<LandingLayout />)} />
-            <Route path="/auth/*" element={<AuthLayout />} />
             <Route
-              path="/dashboard/*"
-              element={<ProtectedRoute element={<DashboardLayout />} />}
+              path="/"
+              element={LoggedInCheck(<LandingLayout />, "/")}
+            />
+             <Route path="/auth/*" element={<AuthLayout />} />
+             <Route
+              path="/dashboard"
+              element={<ProtectedRoute element={<DashboardLayout />} path="/dashboard" />}
             />
             <Route
               path="/space/*"
-              element={<ProtectedRoute element={<SpaceLayout />} />}
+              element={<ProtectedRoute element={<SpaceLayout />} path="/space" />}
             />
 
             <Route path="*" element={<Navigate to="/" replace />} />
