@@ -18,10 +18,9 @@ const queryClient = new QueryClient();
 
 interface ProtectedRouteProps {
   element: React.ReactElement;
-  path: string;
 }
 
-const ProtectedRoute = ({ element, path }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ element }: ProtectedRouteProps) => {
   const isAuthenticated = Cookies.get("token");
 
   if (!isAuthenticated) {
@@ -61,14 +60,13 @@ const App = () => {
               element={
                 <ProtectedRoute
                   element={<DashboardLayout />}
-                  path="/dashboard"
                 />
               }
             />
             <Route
               path="/space/*"
               element={
-                <ProtectedRoute element={<SpaceLayout />} path="/space" />
+                <ProtectedRoute element={<SpaceLayout />} />
               }
             />
 
