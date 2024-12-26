@@ -24,10 +24,10 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ element, path }: ProtectedRouteProps) => {
   const isAuthenticated = Cookies.get("token");
 
-    if (!isAuthenticated) {
-        return <Navigate to="/auth/signin" replace />;
-    }
-    return element;
+  if (!isAuthenticated) {
+    return <Navigate to="/auth/signin" replace />;
+  }
+  return element;
 };
 
 interface LoggedInCheckProps {
@@ -53,16 +53,23 @@ const App = () => {
           <Routes>
             <Route
               path="/"
-              element={LoggedInCheck(<LandingLayout />, "/")}
+              element={<LoggedInCheck element={<LandingLayout />} path="/" />}
             />
-             <Route path="/auth/*" element={<AuthLayout />} />
-             <Route
-              path="/dashboard"
-              element={<ProtectedRoute element={<DashboardLayout />} path="/dashboard" />}
+            <Route path="/auth/*" element={<AuthLayout />} />
+            <Route
+              path="/dashboard/*"
+              element={
+                <ProtectedRoute
+                  element={<DashboardLayout />}
+                  path="/dashboard"
+                />
+              }
             />
             <Route
               path="/space/*"
-              element={<ProtectedRoute element={<SpaceLayout />} path="/space" />}
+              element={
+                <ProtectedRoute element={<SpaceLayout />} path="/space" />
+              }
             />
 
             <Route path="*" element={<Navigate to="/" replace />} />
