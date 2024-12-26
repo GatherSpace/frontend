@@ -51,23 +51,18 @@ const App = () => {
         <Router>
           <Routes>
             <Route
+              path="/dashboard/*"
+              element={<ProtectedRoute element={<DashboardLayout />} />}
+            />
+            <Route
               path="/"
               element={<LoggedInCheck element={<LandingLayout />} path="/" />}
             />
             <Route path="/auth/*" element={<AuthLayout />} />
-            <Route
-              path="/dashboard/*"
-              element={
-                <ProtectedRoute
-                  element={<DashboardLayout />}
-                />
-              }
-            />
+
             <Route
               path="/space/*"
-              element={
-                <ProtectedRoute element={<SpaceLayout />} />
-              }
+              element={<ProtectedRoute element={<SpaceLayout />} />}
             />
 
             <Route path="*" element={<Navigate to="/" replace />} />

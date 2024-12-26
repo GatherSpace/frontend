@@ -82,7 +82,7 @@ const DashboardLayout = () => {
           <Image src={logo} alt="GatherSpace Logo" h="60px" />
         </Flex>
         <Stack spacing={0}>
-          <NavItem icon={FiHome} to="/">
+          <NavItem icon={FiHome} to="/dashboard">
             My Spaces
           </NavItem>
           <NavItem icon={FiMap} to="/dashboard/maps">
@@ -105,7 +105,7 @@ const DashboardLayout = () => {
         <Box as="main" p="4" w="full">
           <Container maxW="full" px="4">
             <Routes>
-              <Route index element={<SpaceManager />} />
+              <Route path="/" element={<SpaceManager />} />
               <Route path="maps" element={<ListMap />} />
               <Route path="element" element={<CreateElement />} />
               <Route path="createMap" element={<CreateMap />} />
