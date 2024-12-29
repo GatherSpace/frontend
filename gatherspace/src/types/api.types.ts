@@ -4,7 +4,7 @@ export interface AuthResponse {
 }
 
 export interface Element {
-  id: string;
+  id?: string;
   width: number;
   height: number;
   staticValue: boolean;
@@ -12,7 +12,7 @@ export interface Element {
 }
 
 export interface Avatar {
-  id: string;
+  id?: string;
   imageUrl: string;
   name: string;
 }

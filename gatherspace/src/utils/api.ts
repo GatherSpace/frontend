@@ -101,6 +101,7 @@ export const adminApi = {
     }
   },
   createMap: async (map: {
+    id?: string;
     thumbnail: string;
     dimensions: string;
     name: string;
@@ -116,7 +117,7 @@ export const adminApi = {
   fetchElements: async () => {
     try {
       const response = await api.get("/elements");
-      return response.data;
+      return response.data.elements;
     } catch (error) {
       return handleApiError(error as AxiosError);
     }
@@ -131,10 +132,10 @@ export const userApi = {
       return handleApiError(error as AxiosError);
     }
   },
-  fetchAvatars: async () => {
+  fetchAvatars: async (): Promise<Avatar[]> => {
     try {
       const response = await api.get("user/avatars");
-      return response.data;
+      return response.data.avatars;
     } catch (error) {
       return handleApiError(error as AxiosError);
     }
