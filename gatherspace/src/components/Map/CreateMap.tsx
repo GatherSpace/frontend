@@ -23,7 +23,7 @@ interface Map {
 
 const CreateMap = () => {
   const toast = useToast();
-  const [showCanvas, setShowCanvas] = useState(false);
+  const [showCanvas, setShowCanvas] = useState(true);
   const [elements, setElements] = useState<Element[]>([]);
 
   const [formData, setFormData] = useState<Map>({
@@ -49,7 +49,13 @@ const CreateMap = () => {
       setShowCanvas(false);
       return;
     }
+
     setShowCanvas(true);
+    setFormData({
+      thumbnail: "",
+      name: "",
+      dimensions: "",
+    });
   };
 
   useEffect(() => {
@@ -65,7 +71,7 @@ const CreateMap = () => {
   }, [formData]);
 
   return (
-    <Box maxW="container.md" mx="auto">
+    <Box maxW="100%" mx="auto">
       <Heading mb={6}>Create Map</Heading>
       <form onSubmit={handleSubmit}>
         <VStack spacing={4} align="stretch">
@@ -102,13 +108,20 @@ const CreateMap = () => {
             />
           </FormControl>
 
-          <Button type="submit" colorScheme="blue" loadingText="Creating...">
+          {/* <Button type="submit" colorScheme="blue" loadingText="Creating...">
             Create Map
-          </Button>
+          </Button> */}
         </VStack>
       </form>
 
-      {showCanvas && <EditMap elements={elements} mapDetails={formData} />}
+      {showCanvas && (
+        <EditMap
+          elements={elements}
+          mapDetails={formData}
+          setShowCanvas={setShowCanvas}
+          setFormData={setFormData}
+        />
+      )}
     </Box>
   );
 };
