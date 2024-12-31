@@ -20,6 +20,7 @@ import CreateElement from "../components/element/CreateElement";
 import ListMap from "../components/Map/ListMap";
 import CreateAvatar from "../components/avatar/CreateAvatar";
 import CreateSpace from "../components/space/CreateSpace";
+import EditSpace from "../components/space/EditSpace";
 interface NavItemProps {
   icon: any;
   children: string;
@@ -111,6 +112,7 @@ const DashboardLayout = () => {
               <Route path="createMap" element={<CreateMap />} />
               <Route path="avatar" element={<CreateAvatar />} />
               <Route path="spaceCreate" element={<CreateSpace />} />
+              <Route path="/edit-space/:spaceId" element={<EditSpace />} />
             </Routes>
           </Container>
         </Box>

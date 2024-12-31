@@ -179,7 +179,7 @@ const SpaceComponent: React.FC<SpaceComponentProps> = ({ space }) => {
 
   const handleEdit = () => {
     // Navigate to the edit page for the specific space
-    navigate(`/space/edit-space/${data?.id}`); // Assuming you have a route like '/edit-space/:spaceId'
+    navigate(`/dashboard/edit-space/${data?.id}`, { state: { space: data } });
     setIsMenuOpen(false);
   };
 
