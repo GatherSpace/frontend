@@ -114,7 +114,7 @@ export const adminApi = {
       return handleApiError(error as AxiosError);
     }
   },
-  fetchElements: async () => {
+  fetchElements: async (): Promise<Element[]> => {
     try {
       const response = await api.get("/elements");
       return response.data.elements;
