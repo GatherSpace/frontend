@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { fetchUserSpaces } from "../../utils/api";
 import { Space } from "../../types/api.types";
+import { useNavigate } from "react-router-dom";
 // import MapComponent from "./MapComponent";
 import SpaceComponent from "./SpaceComponent";
 
@@ -20,8 +21,13 @@ const SpaceManager = () => {
     queryKey: ["spaces"],
     queryFn: fetchUserSpaces,
   });
+  const navigate = useNavigate();
 
   console.log("Spaces data:", spaces);
+
+  const handleSpaceClick = (space: Space) => {
+    navigate(`/space/${space.id}`, { state: { space } });
+  };
 
   return (
     <Box p={6}>
@@ -104,6 +110,7 @@ const SpaceManager = () => {
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = "translateY(0)";
                 }}
+                onClick={() => handleSpaceClick(space)}
               >
                 <SpaceComponent space={space} key={space.id} />
               </div>

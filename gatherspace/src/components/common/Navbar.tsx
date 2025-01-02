@@ -11,9 +11,9 @@ import {
 import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/useAuthStore";
+import logo from "../../assets/logo.png";
 
 export default function Navbar() {
-  const { colorMode, toggleColorMode } = useColorMode();
   const navigate = useNavigate();
   const signout = useAuthStore((state) => state.signout);
 
@@ -23,18 +23,15 @@ export default function Navbar() {
   };
 
   return (
-    <Box bg={useColorModeValue("white", "gray.800")} px={4} shadow="sm">
+    <Box bg="white" px={4} shadow="sm">
       <Container maxW="container.xl">
         <Flex h={16} alignItems="center" justifyContent="space-between">
           <Link to="/dashboard">
-            <Image src="/logo.png" alt="GatherSpace Logo" h="40px" />
+            <Image src={logo} alt="GatherSpace Logo" h="60px" />
           </Link>
 
           <Flex alignItems="center">
             <Stack direction="row" spacing={7}>
-              <Button onClick={toggleColorMode}>
-                {colorMode === "light" ? <MoonIcon /> : <SunIcon />}
-              </Button>
               <Button onClick={handleSignOut} variant="ghost">
                 Sign Out
               </Button>

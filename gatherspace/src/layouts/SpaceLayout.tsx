@@ -16,17 +16,14 @@ const SpaceLayout = () => {
   }
 
   return (
-    <Box minH="100vh" bg="gray.50">
+    <Box h="100vh" w="100vw">
       <Navbar />
-      <Container maxW="container.xl" py={8}>
+      <div>
         <Routes>
-          <Route path="/edit-space/:spaceId" element={<EditSpace />} />
-          <Route path="/create" element={<CreateSpace />} />
-          <Route path="/join" element={<JoinSpace />} />
           <Route path="/:spaceId" element={<SpaceView />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
-      </Container>
+      </div>
     </Box>
   );
 };
