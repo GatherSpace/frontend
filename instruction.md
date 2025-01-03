@@ -294,7 +294,9 @@ baseUrl - ws://localhost:3000/ws
      "y": 3
      },
      "users": [{
-     "id": 1,
+     "userId": 1,
+     "x": 2,
+     "y": 3
      }]
      }
      }
