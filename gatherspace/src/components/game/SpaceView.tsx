@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+/*import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { fetchElements } from "../../utils/api";
 
@@ -192,6 +192,312 @@ const SpaceView: React.FC = () => {
           )}
         />
       ))}
+    </div>
+  );
+};
+
+export default SpaceView; */
+
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation, useParams } from "react-router-dom";
+import { fetchElements } from "../../utils/api";
+import { WebSocketService } from "../../services/WebSocketService";
+import { Space, Element, WebSocketMessage } from "../../types/api.types";
+
+interface SpaceElement {
+  id: string;
+  elementId: string;
+  spaceId: string;
+  x: number;
+  y: number;
+}
+
+interface UserPosition {
+  userId: string;
+  x: number;
+  y: number;
+}
+
+const SpaceView: React.FC = () => {
+  const { spaceId } = useParams<{ spaceId: string }>();
+  const [space, setSpace] = useState<Space | null>(null);
+  const [elements, setElements] = useState<Element[]>([]);
+  const [users, setUsers] = useState<UserPosition[]>([]);
+  const [myPosition, setMyPosition] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
+  const [myUserId, setMyUserId] = useState<string | null>(null);
+  const [gridOffset, setGridOffset] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
+  const gridCellSize = 25;
+  const location = useLocation();
+  const isMounted = useRef(true);
+
+  const avatarRef = useRef<HTMLDivElement>(null);
+  const wsService = new WebSocketService();
+
+  // Fetch elements and space data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const elementsResponse = await fetchElements();
+        setElements(elementsResponse);
+
+        if (location.state && location.state.space) {
+          setSpace(location.state.space);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted.current = false;
+    };
+  }, [location]);
+
+  // Websocket connection and event handling
+  useEffect(() => {
+    if (spaceId) {
+      wsService.connect();
+      const handleWebSocketMessage = (message: WebSocketMessage) => {
+        if (!isMounted.current) return;
+
+        switch (message.type) {
+          case "initial_state":
+            setMyPosition({
+              x: message.payload.spawnPoint.x,
+              y: message.payload.spawnPoint.y,
+            });
+            setMyUserId(message.payload.userId);
+            setUsers(message.payload.users);
+            break;
+          case "user_joined":
+            setUsers((prevUsers) => [...prevUsers, message.payload]);
+            break;
+          case "user_left":
+            setUsers((prevUsers) =>
+              prevUsers.filter((u) => u.userId !== message.payload.userId)
+            );
+            break;
+          case "position_update":
+            if (message.payload.userId === myUserId) {
+              // Update the offset for smooth movement for the local user
+              setGridOffset((prevOffset) => ({
+                x:
+                  prevOffset.x -
+                  (message.payload.x - myPosition.x) * gridCellSize,
+                y:
+                  prevOffset.y -
+                  (message.payload.y - myPosition.y) * gridCellSize,
+              }));
+              setMyPosition({
+                x: message.payload.x,
+                y: message.payload.y,
+              });
+            } else {
+              // Directly update positions for other users
+              setUsers((prevUsers) =>
+                prevUsers.map((user) =>
+                  user.userId === message.payload.userId
+                    ? { ...user, x: message.payload.x, y: message.payload.y }
+                    : user
+                )
+              );
+            }
+            break;
+          default:
+            console.log("Unknown message type:", message);
+        }
+      };
+
+      wsService.ws?.addEventListener("message", (event) => {
+        const message = JSON.parse(event.data) as WebSocketMessage;
+        handleWebSocketMessage(message);
+      });
+
+      // Join space after connection
+      if (wsService.ws != null) {
+        wsService.ws.onopen = () => {
+          wsService.joinSpace(spaceId);
+        };
+      }
+      return () => {
+        wsService.disconnect();
+      };
+    }
+  }, [spaceId]);
+
+  // Handle user movement with arrow keys
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      let newX = myPosition.x;
+      let newY = myPosition.y;
+
+      switch (event.key) {
+        case "ArrowUp":
+          newY = Math.max(0, myPosition.y - 1);
+          break;
+        case "ArrowDown":
+          newY = Math.min((space?.height || 0) - 1, myPosition.y + 1);
+          break;
+        case "ArrowLeft":
+          newX = Math.max(0, myPosition.x - 1);
+          break;
+        case "ArrowRight":
+          newX = Math.min((space?.width || 0) - 1, myPosition.x + 1);
+          break;
+        default:
+          return; // Ignore other keys
+      }
+
+      if (newX !== myPosition.x || newY !== myPosition.y) {
+        wsService.updatePosition(newX, newY);
+      }
+    },
+    [myPosition, space]
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleKeyDown]);
+
+  // Function to get element image URL and dimensions
+  const imageUrlWithElementId = useCallback(
+    (elementId: string) => {
+      const element = elements.find((el) => el.id === elementId);
+      return element ? element.imageUrl : "";
+    },
+    [elements]
+  );
+
+  const elementWidthAndHeight = useCallback(
+    (elementId: string) => {
+      const element = elements.find((el) => el.id === elementId);
+      return element
+        ? { width: element.width, height: element.height }
+        : { width: 0, height: 0 };
+    },
+    [elements]
+  );
+
+  // Center the grid on the user's position when it changes
+  useEffect(() => {
+    const offsetX =
+      -myPosition.x * gridCellSize + window.innerWidth / 2 - gridCellSize / 2;
+    const offsetY =
+      -myPosition.y * gridCellSize + window.innerHeight / 2 - gridCellSize / 2;
+    setGridOffset({ x: offsetX, y: offsetY });
+  }, [myPosition]);
+
+  // Styles
+  const gridContainerStyle: React.CSSProperties = {
+    position: "relative",
+    width: "100vw",
+    height: "100vh",
+    overflow: "hidden",
+    backgroundImage: `url(${space?.thumbnail})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+  };
+
+  const gridStyle: React.CSSProperties = {
+    position: "absolute",
+    width: `${space?.width || 0 * gridCellSize}px`,
+    height: `${space?.height || 0 * gridCellSize}px`,
+    transform: `translate(${gridOffset.x}px, ${gridOffset.y}px)`,
+    backgroundImage: `
+        repeating-linear-gradient(
+          90deg,
+          #eee, 
+          #eee ${gridCellSize}px,
+          transparent ${gridCellSize}px,
+          transparent ${gridCellSize * 2}px),
+        repeating-linear-gradient(
+          0deg,
+          #eee, 
+          #eee ${gridCellSize}px,
+          transparent ${gridCellSize}px, 
+          transparent ${gridCellSize * 2}px)`,
+  };
+
+  const elementStyle = (
+    element: SpaceElement,
+    widthAndHeight: { width: number; height: number }
+  ): React.CSSProperties => ({
+    position: "absolute",
+    left: `${element.x * gridCellSize}px`,
+    top: `${element.y * gridCellSize}px`,
+    width: `${widthAndHeight.width * gridCellSize}px`,
+    height: `${widthAndHeight.height * gridCellSize}px`,
+    objectFit: "contain",
+    pointerEvents: "none",
+  });
+
+  const avatarStyle: React.CSSProperties = {
+    position: "absolute",
+    width: `${gridCellSize}px`,
+    height: `${gridCellSize}px`,
+    border: "2px solid #ccc",
+    borderRadius: "50%",
+    overflow: "hidden",
+    left: `${myPosition.x * gridCellSize + gridOffset.x}px`,
+    top: `${myPosition.y * gridCellSize + gridOffset.y}px`,
+  };
+
+  const userAvatarStyle = (user: UserPosition): React.CSSProperties => ({
+    position: "absolute",
+    width: `${gridCellSize}px`,
+    height: `${gridCellSize}px`,
+    border: "2px solid #ccc",
+    borderRadius: "50%",
+    overflow: "hidden",
+    left: `${user.x * gridCellSize + gridOffset.x}px`,
+    top: `${user.y * gridCellSize + gridOffset.y}px`,
+  });
+
+  const avatarImageStyle: React.CSSProperties = {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+  };
+
+  return (
+    <div style={gridContainerStyle}>
+      <div style={gridStyle}>
+        {/* Render elements */}
+        {space?.elements?.map((element) => (
+          <img
+            key={element.id}
+            src={imageUrlWithElementId(element.elementId)}
+            alt={`Placed element ${element.id}`}
+            style={elementStyle(
+              element,
+              elementWidthAndHeight(element.elementId)
+            )}
+          />
+        ))}
+
+        {/* Render my avatar */}
+        <div ref={avatarRef} style={avatarStyle}>
+          <img src={""} alt="My Avatar" style={avatarImageStyle} />
+        </div>
+
+        {/* Render other users' avatars */}
+        {users.map((user) => (
+          <div key={user.userId} style={userAvatarStyle(user)}>
+            <img src={""} alt="User Avatar" style={avatarImageStyle} />
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

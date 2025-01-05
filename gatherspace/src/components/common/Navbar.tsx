@@ -30,6 +30,9 @@ export default function Navbar() {
       py={1}
       backgroundColor={"gray.200"}
       shadow="sm"
+      position="fixed"
+      top="0"
+      zIndex="999"
     >
       <Box width="100%">
         <Flex h={16} alignItems="center" justifyContent="space-between">

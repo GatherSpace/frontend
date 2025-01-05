@@ -1,11 +1,12 @@
 import { WebSocketMessage } from "../types/api.types";
-
+import Cookies from "js-cookie";
 export class WebSocketService {
-  private ws: WebSocket | null = null;
-  private readonly baseUrl: string = "ws://localhost:3000/ws";
+  ws: WebSocket | null = null;
+  private readonly baseUrl: string = "ws://localhost:8080/ws";
 
   connect() {
     this.ws = new WebSocket(this.baseUrl);
+    // console.log("WebSocket Connected");
     this.setupEventListeners();
   }
 
@@ -18,11 +19,12 @@ export class WebSocketService {
 
   joinSpace(spaceId: string) {
     if (!this.ws) throw new Error("WebSocket not connected");
-
+    const token = Cookies.get("token");
+    if (!token) throw new Error("Token not found");
     this.ws.send(
       JSON.stringify({
         type: "join_space",
-        payload: { spaceId },
+        payload: { token, spaceId },
       })
     );
   }
@@ -47,6 +49,7 @@ export class WebSocketService {
 
     this.ws.onmessage = (event) => {
       const data = JSON.parse(event.data) as WebSocketMessage;
+
       this.handleMessage(data);
     };
 
