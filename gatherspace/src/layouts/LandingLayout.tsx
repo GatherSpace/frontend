@@ -16,7 +16,7 @@ import { Link as RouterLink } from "react-router-dom";
 
 const LandingLayout = () => {
   return (
-    <Box>
+    <Box minHeight="100vh" width="100vw" display="flex" flexDirection="column">
       {/* Navigation */}
       <Box as="nav" bg={useColorModeValue("white", "gray.800")} shadow="sm">
         <Container maxW="container.xl">

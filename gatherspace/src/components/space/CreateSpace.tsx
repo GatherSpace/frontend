@@ -23,14 +23,19 @@ const CreateSpace = () => {
   const [maps, setMaps] = useState<Map[]>([]);
   const [formData, setFormData] = useState({
     name: "",
-    dimensions: "",
     mapId: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createSpace(formData.name, formData.dimensions, formData.mapId);
+      const selectedMap = maps.find((map) => map.id === formData.mapId);
+      if (!selectedMap) {
+        throw new Error("Selected map not found");
+      }
+      const dimensions = selectedMap.width + "x" + selectedMap.height;
+      await createSpace(formData.name, dimensions, formData.mapId);
+
       toast({
         title: "Space created successfully!",
         status: "success",
@@ -38,7 +43,6 @@ const CreateSpace = () => {
       });
       setFormData({
         name: "",
-        dimensions: "",
         mapId: "",
       });
       navigate("/dashboard");
@@ -57,6 +61,7 @@ const CreateSpace = () => {
     const fetchMaps = async () => {
       try {
         const maps = await getAllMaps();
+        console.log("Fetched maps:", maps);
         setMaps(maps);
       } catch (error) {
         console.error("Error fetching maps:", error);
@@ -78,17 +83,6 @@ const CreateSpace = () => {
                 setFormData({ ...formData, name: e.target.value })
               }
               placeholder="Enter space name"
-            />
-          </FormControl>
-
-          <FormControl isRequired>
-            <FormLabel>Dimensions</FormLabel>
-            <Input
-              value={formData.dimensions}
-              onChange={(e) =>
-                setFormData({ ...formData, dimensions: e.target.value })
-              }
-              placeholder="Enter dimensions (e.g., 10x10)"
             />
           </FormControl>
 

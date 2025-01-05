@@ -183,6 +183,11 @@ const SpaceComponent: React.FC<SpaceComponentProps> = ({ space }) => {
     setIsMenuOpen(false);
   };
 
+  const handleClick = () => {
+    // Navigate to the edit page for the specific space
+    navigate(`/space/${space?.id}`, { state: { space } });
+  };
+
   const handleDelete = () => {
     // Implement your delete logic here
     if (data === undefined) return;
@@ -204,6 +209,7 @@ const SpaceComponent: React.FC<SpaceComponentProps> = ({ space }) => {
           objectFit="cover"
           width="100%"
           height="100%"
+          onClick={handleClick}
         />
         <Box position="absolute" top="2" right="2">
           <Menu>

@@ -225,6 +225,7 @@ const EditSpace = () => {
     width: "100%",
     height: "100vh",
     position: "relative",
+    backgroundColor: "gray",
     cursor: isDragging ? "grabbing" : selectedElement ? "crosshair" : "grab",
   };
 

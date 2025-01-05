@@ -25,10 +25,6 @@ const SpaceManager = () => {
 
   console.log("Spaces data:", spaces);
 
-  const handleSpaceClick = (space: Space) => {
-    navigate(`/space/${space.id}`, { state: { space } });
-  };
-
   return (
     <Box p={6}>
       <Box>
@@ -110,7 +106,7 @@ const SpaceManager = () => {
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = "translateY(0)";
                 }}
-                onClick={() => handleSpaceClick(space)}
+                // onClick={() => handleSpaceClick(space)}
               >
                 <SpaceComponent space={space} key={space.id} />
               </div>

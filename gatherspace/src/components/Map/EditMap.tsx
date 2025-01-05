@@ -416,6 +416,7 @@ const EditMap: React.FC<EditMapProps> = ({
     width: "100%",
     height: "100vh",
     position: "relative",
+    backgroundColor: "gray",
     cursor: isDragging ? "grabbing" : selectedElement ? "crosshair" : "grab",
   };
 
@@ -427,6 +428,7 @@ const EditMap: React.FC<EditMapProps> = ({
       linear-gradient(to right, #ddd 1px, transparent 1px),
       linear-gradient(to bottom, #ddd 1px, transparent 1px)
     `,
+    backgroundColor: "gray",
     backgroundSize: `${CELL_SIZE}px ${CELL_SIZE}px`,
     border: "1px solid #ccc",
     transform: `translate(
@@ -507,7 +509,7 @@ const EditMap: React.FC<EditMapProps> = ({
       </Box>
 
       {/* Map Editor */}
-      <Box flex="1" w="100%">
+      <Box flex="1" w="100%" minHeight="100vh">
         <Box position="relative" w="100%" h="calc(100vh - 96px)">
           <div
             ref={containerRef}

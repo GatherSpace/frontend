@@ -7,7 +7,15 @@ import SignUp from "../components/auth/SignUp";
 const AuthLayout = () => {
   return (
     // center the content
-    <Box minH="100vh" bg="gray.50" minW="100vw">
+    <Box
+      minH="100vh"
+      bg="gray.50"
+      minW="100vw"
+      display="flex"
+      flexDirection="column"
+      justifyContent="center"
+      alignItems="center"
+    >
       <Container maxW="container.sm" py={10}>
         <Flex direction="column" align="center" mb={8}>
           <Link to="/">
