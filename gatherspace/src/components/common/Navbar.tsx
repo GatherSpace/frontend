@@ -23,8 +23,15 @@ export default function Navbar() {
   };
 
   return (
-    <Box bg="white" px={4} shadow="sm">
-      <Container maxW="container.xl">
+    <Box
+      bg="white"
+      width="100%"
+      px={16}
+      py={1}
+      backgroundColor={"gray.200"}
+      shadow="sm"
+    >
+      <Box width="100%">
         <Flex h={16} alignItems="center" justifyContent="space-between">
           <Link to="/dashboard">
             <Image src={logo} alt="GatherSpace Logo" h="60px" />
@@ -38,7 +45,7 @@ export default function Navbar() {
             </Stack>
           </Flex>
         </Flex>
-      </Container>
+      </Box>
     </Box>
   );
 }

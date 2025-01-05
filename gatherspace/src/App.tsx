@@ -54,6 +54,7 @@ const App = () => {
               path="/dashboard/*"
               element={<ProtectedRoute element={<DashboardLayout />} />}
             />
+
             <Route
               path="/"
               element={<LoggedInCheck element={<LandingLayout />} path="/" />}

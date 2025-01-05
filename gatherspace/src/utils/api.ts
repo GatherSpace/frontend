@@ -61,6 +61,7 @@ export const auth = {
         password,
       });
       Cookies.set("token", response.data.token, {
+        path: "/",
         secure: true,
         sameSite: "strict",
       });
