@@ -9,12 +9,6 @@ import { useAuthStore } from "../store/useAuthStore";
 import EditSpace from "../components/space/EditSpace";
 
 const SpaceLayout = () => {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-
-  if (!isAuthenticated) {
-    return <Navigate to="/auth/signin" replace />;
-  }
-
   return (
     <Box h="100vh" w="100vw">
       <Navbar />

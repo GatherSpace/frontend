@@ -7,7 +7,7 @@ export class WebSocketService {
   connect() {
     this.ws = new WebSocket(this.baseUrl);
     // console.log("WebSocket Connected");
-    this.setupEventListeners();
+    //this.setupEventListeners();
   }
 
   disconnect() {
@@ -23,7 +23,7 @@ export class WebSocketService {
     if (!token) throw new Error("Token not found");
     this.ws.send(
       JSON.stringify({
-        type: "join_space",
+        type: "join",
         payload: { token, spaceId },
       })
     );
@@ -34,7 +34,7 @@ export class WebSocketService {
 
     this.ws.send(
       JSON.stringify({
-        type: "update_position",
+        type: "move",
         payload: { x, y },
       })
     );

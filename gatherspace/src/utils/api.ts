@@ -144,9 +144,9 @@ export const userApi = {
   fetchBulkUserData: async (userIds: string[]) => {
     try {
       const response = await api.get(
-        `/user/bulk?${userIds.map((id) => "ids=" + id).join("&")}`
+        `/user/metadata/bulk?${userIds.map((id) => "ids=" + id).join("&")}`
       );
-      return response.data;
+      return response.data.avatars;
     } catch (error) {
       return handleApiError(error as AxiosError);
     }
