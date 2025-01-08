@@ -454,7 +454,7 @@ const SpaceView: React.FC = () => {
   // }, [spaceId, myUserId, mapUserWithAvatarUrl]);
 
   // In your SpaceView component, update the WebSocket useEffect:
-
+  /*
   useEffect(() => {
     if (!spaceId) return;
 
@@ -529,7 +529,97 @@ const SpaceView: React.FC = () => {
     return () => {
       wsService.removeMessageHandler(handleWebSocketMessage);
     };
-  }, [spaceId, myUserId, mapUserWithAvatarUrl]);
+  }, [spaceId, myUserId, mapUserWithAvatarUrl]); */
+
+  // In your SpaceView component, update the WebSocket useEffect:
+
+  useEffect(() => {
+    if (!spaceId) return;
+
+    let isSubscribed = true;
+
+    const handleWebSocketMessage = async (message: WebSocketMessage) => {
+      if (!isSubscribed) return;
+
+      switch (message.type) {
+        case "space-joined":
+          setMyPosition({
+            x: message.payload.spawn.x,
+            y: message.payload.spawn.y,
+          });
+          setMyUserId(message.payload.userId);
+          const usersWithAvatars = await Promise.all(
+            message.payload.users.map(mapUserWithAvatarUrl)
+          );
+          if (isSubscribed) {
+            setUsers(usersWithAvatars);
+          }
+          break;
+
+        case "user-joined":
+          const newUser = await mapUserWithAvatarUrl(message.payload);
+          if (isSubscribed) {
+            setUsers((prevUsers) => [...prevUsers, newUser]);
+          }
+          break;
+
+        case "user-left":
+          if (isSubscribed) {
+            setUsers((prevUsers) =>
+              prevUsers.filter((u) => u.userId !== message.payload.userId)
+            );
+          }
+          break;
+
+        case "movement":
+          console.log("Received movement message:", message);
+          if (!isSubscribed) return;
+
+          if (message.payload.userId === myUserId) {
+            setMyPosition({
+              x: message.payload.x,
+              y: message.payload.y,
+            });
+          } else {
+            setUsers((prevUsers) =>
+              prevUsers.map((user) =>
+                user.userId === message.payload.userId
+                  ? { ...user, x: message.payload.x, y: message.payload.y }
+                  : user
+              )
+            );
+          }
+          break;
+
+        case "movement-rejected":
+          if (isSubscribed) {
+            setMyPosition({
+              x: message.payload.x,
+              y: message.payload.y,
+            });
+          }
+          break;
+      }
+    };
+
+    // Set up websocket connection and join space
+    const initializeWebSocket = async () => {
+      try {
+        wsService.addMessageHandler(handleWebSocketMessage);
+        await wsService.joinSpace(spaceId);
+      } catch (error) {
+        console.error("Failed to initialize WebSocket:", error);
+      }
+    };
+
+    initializeWebSocket();
+
+    // Cleanup
+    return () => {
+      isSubscribed = false;
+      wsService.removeMessageHandler(handleWebSocketMessage);
+    };
+  }, [spaceId, myUserId]);
   // Handle user movement with arrow keys
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
