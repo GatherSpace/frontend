@@ -1,11 +1,20 @@
-import { WebSocketMessage } from "../types/api.types";
+/*import { WebSocketMessage } from "../types/api.types";
 import Cookies from "js-cookie";
-export class WebSocketService {
+ export class WebSocketService {
   ws: WebSocket | null = null;
   private readonly baseUrl: string = "ws://localhost:8080/ws";
+  //static instance: WebSocketService | null = null;
+
+  getInstance() {
+    if (!this.ws) {
+      this.connect();
+    }
+    return this.ws;
+  }
 
   connect() {
     this.ws = new WebSocket(this.baseUrl);
+
     // console.log("WebSocket Connected");
     //this.setupEventListeners();
   }
@@ -76,6 +85,110 @@ export class WebSocketService {
       default:
         console.log("Unknown message type:", message);
     }
+  }
+}
+
+export const wsService = new WebSocketService();
+*/
+import { WebSocketMessage } from "../types/api.types";
+import Cookies from "js-cookie";
+
+type MessageHandler = (message: WebSocketMessage) => void;
+
+export class WebSocketService {
+  private ws: WebSocket | null = null;
+  private readonly baseUrl: string = "ws://localhost:8080/ws";
+  private messageHandlers: Set<MessageHandler> = new Set();
+  private isConnecting: boolean = false;
+
+  getInstance(): WebSocket | null {
+    if (!this.ws || this.ws.readyState === WebSocket.CLOSED) {
+      this.connect();
+    }
+    return this.ws;
+  }
+
+  connect() {
+    if (
+      this.isConnecting ||
+      (this.ws && this.ws.readyState === WebSocket.OPEN)
+    ) {
+      return;
+    }
+
+    this.isConnecting = true;
+    this.ws = new WebSocket(this.baseUrl);
+
+    this.ws.onopen = () => {
+      console.log("WebSocket Connected");
+      this.isConnecting = false;
+    };
+
+    this.ws.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data) as WebSocketMessage;
+        console.log("Received message:", message);
+        this.messageHandlers.forEach((handler) => handler(message));
+      } catch (error) {
+        console.error("Error parsing message:", error);
+      }
+    };
+
+    this.ws.onerror = (error) => {
+      console.error("WebSocket Error:", error);
+      this.isConnecting = false;
+    };
+
+    this.ws.onclose = () => {
+      console.log("WebSocket Disconnected");
+      this.isConnecting = false;
+      this.ws = null;
+    };
+  }
+
+  disconnect() {
+    if (this.ws) {
+      this.ws.close();
+      this.ws = null;
+      this.messageHandlers.clear();
+    }
+  }
+
+  addMessageHandler(handler: MessageHandler) {
+    this.messageHandlers.add(handler);
+  }
+
+  removeMessageHandler(handler: MessageHandler) {
+    this.messageHandlers.delete(handler);
+  }
+
+  joinSpace(spaceId: string) {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      throw new Error("WebSocket not connected");
+    }
+
+    const token = Cookies.get("token");
+    if (!token) throw new Error("Token not found");
+
+    this.ws.send(
+      JSON.stringify({
+        type: "join",
+        payload: { token, spaceId },
+      })
+    );
+  }
+
+  updatePosition(x: number, y: number) {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      throw new Error("WebSocket not connected");
+    }
+
+    this.ws.send(
+      JSON.stringify({
+        type: "move",
+        payload: { x, y },
+      })
+    );
   }
 }
 

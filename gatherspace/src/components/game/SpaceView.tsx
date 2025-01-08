@@ -201,7 +201,7 @@ export default SpaceView; */
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { fetchElements, fetchBulkUserData } from "../../utils/api";
-import { WebSocketService } from "../../services/WebSocketService";
+import { wsService } from "../../services/WebSocketService";
 import { Space, Element, WebSocketMessage } from "../../types/api.types";
 
 interface SpaceElement {
@@ -239,7 +239,6 @@ const SpaceView: React.FC = () => {
   const isMounted = useRef(true);
 
   const avatarRef = useRef<HTMLDivElement>(null);
-  const wsService = new WebSocketService();
 
   // Fetch elements and space data
   useEffect(() => {
@@ -288,9 +287,9 @@ const SpaceView: React.FC = () => {
       avatarUrl,
     };
   };
-  useEffect(() => {
+  /* useEffect(() => {
     if (spaceId) {
-      wsService.connect();
+      
       const handleWebSocketMessage = async (message: WebSocketMessage) => {
         // if (!isMounted.current) return;
 
@@ -331,7 +330,7 @@ const SpaceView: React.FC = () => {
                 y:
                   prevOffset.y -
                   (message.payload.y - myPosition.y) * gridCellSize,
-              })); */
+              })); 
               setMyPosition({
                 x: message.payload.x,
                 y: message.payload.y,
@@ -355,15 +354,15 @@ const SpaceView: React.FC = () => {
         }
       };
 
-      wsService.ws?.addEventListener("message", (event) => {
+      wsService.getInstance()?.addEventListener("message", (event) => {
         const message = JSON.parse(event.data) as WebSocketMessage;
         console.log("Received message:", message);
         handleWebSocketMessage(message);
       });
 
       // Join space after connection
-      if (wsService.ws != null) {
-        wsService.ws.onopen = () => {
+      if (wsService.getInstance() != null) {
+        wsService.getInstance().onopen = () => {
           console.log("WebSocket Connected");
           wsService.joinSpace(spaceId);
         };
@@ -373,7 +372,164 @@ const SpaceView: React.FC = () => {
       };
     }
   }, [spaceId]);
+*/
+  // In your SpaceView component, replace the WebSocket useEffect with this:
 
+  // useEffect(() => {
+  //   if (!spaceId) return;
+
+  //   const handleWebSocketMessage = async (message: WebSocketMessage) => {
+  //     if (!isMounted.current) return;
+
+  //     switch (message.type) {
+  //       case "space-joined":
+  //         console.log("Joined space:", message.payload);
+  //         setMyPosition({
+  //           x: message.payload.spawn.x,
+  //           y: message.payload.spawn.y,
+  //         });
+  //         setMyUserId(message.payload.userId);
+  //         const usersWithAvatars = await Promise.all(
+  //           message.payload.users.map(mapUserWithAvatarUrl)
+  //         );
+  //         setUsers(usersWithAvatars);
+  //         break;
+
+  //       case "user-joined":
+  //         const newUser = await mapUserWithAvatarUrl(message.payload);
+  //         setUsers((prevUsers) => [...prevUsers, newUser]);
+  //         break;
+
+  //       case "user-left":
+  //         setUsers((prevUsers) =>
+  //           prevUsers.filter((u) => u.userId !== message.payload.userId)
+  //         );
+  //         break;
+
+  //       case "movement":
+  //         if (message.payload.userId === myUserId) {
+  //           setMyPosition({
+  //             x: message.payload.x,
+  //             y: message.payload.y,
+  //           });
+  //         } else {
+  //           setUsers((prevUsers) =>
+  //             prevUsers.map((user) =>
+  //               user.userId === message.payload.userId
+  //                 ? { ...user, x: message.payload.x, y: message.payload.y }
+  //                 : user
+  //             )
+  //           );
+  //         }
+  //         break;
+
+  //       case "movement-rejected":
+  //         setMyPosition({
+  //           x: message.payload.x,
+  //           y: message.payload.y,
+  //         });
+  //         break;
+  //     }
+  //   };
+
+  //   // Connect and join space
+  //   const initializeWebSocket = async () => {
+  //     try {
+  //       wsService.addMessageHandler(handleWebSocketMessage);
+  //       await wsService.connect();
+  //       await wsService.joinSpace(spaceId);
+  //     } catch (error) {
+  //       console.error("Failed to initialize WebSocket:", error);
+  //     }
+  //   };
+
+  //   initializeWebSocket();
+
+  //   // Cleanup
+  //   return () => {
+  //     isMounted.current = false;
+  //     wsService.removeMessageHandler(handleWebSocketMessage);
+  //     wsService.disconnect();
+  //   };
+  // }, [spaceId, myUserId, mapUserWithAvatarUrl]);
+
+  // In your SpaceView component, update the WebSocket useEffect:
+
+  useEffect(() => {
+    if (!spaceId) return;
+
+    const handleWebSocketMessage = async (message: WebSocketMessage) => {
+      console.log("Handling message:", message);
+
+      switch (message.type) {
+        case "space-joined":
+          setMyPosition({
+            x: message.payload.spawn.x,
+            y: message.payload.spawn.y,
+          });
+          setMyUserId(message.payload.userId);
+          const usersWithAvatars = await Promise.all(
+            message.payload.users.map(mapUserWithAvatarUrl)
+          );
+          setUsers(usersWithAvatars);
+          break;
+
+        case "user-joined":
+          const newUser = await mapUserWithAvatarUrl(message.payload);
+          setUsers((prevUsers) => [...prevUsers, newUser]);
+          break;
+
+        case "user-left":
+          setUsers((prevUsers) =>
+            prevUsers.filter((u) => u.userId !== message.payload.userId)
+          );
+          break;
+
+        case "movement":
+          if (message.payload.userId === myUserId) {
+            setMyPosition({
+              x: message.payload.x,
+              y: message.payload.y,
+            });
+          } else {
+            setUsers((prevUsers) =>
+              prevUsers.map((user) =>
+                user.userId === message.payload.userId
+                  ? { ...user, x: message.payload.x, y: message.payload.y }
+                  : user
+              )
+            );
+          }
+          break;
+
+        case "movement-rejected":
+          setMyPosition({
+            x: message.payload.x,
+            y: message.payload.y,
+          });
+          break;
+      }
+    };
+
+    // Add message handler
+    wsService.addMessageHandler(handleWebSocketMessage);
+
+    // Set up connection and join space
+    const ws = wsService.getInstance();
+
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      wsService.joinSpace(spaceId);
+    } else if (ws) {
+      ws.addEventListener("open", () => {
+        wsService.joinSpace(spaceId);
+      });
+    }
+
+    // Cleanup
+    return () => {
+      wsService.removeMessageHandler(handleWebSocketMessage);
+    };
+  }, [spaceId, myUserId, mapUserWithAvatarUrl]);
   // Handle user movement with arrow keys
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
@@ -533,7 +689,7 @@ const SpaceView: React.FC = () => {
           <img src={myAvatarUrl} alt="My Avatar" style={avatarImageStyle} />
         </div>
 
-        {/* Render other users' avatars */ console.log("Users:", users)}
+        {/* Render other users' avatars */}
         {users.map((user) => (
           <div key={user.userId} style={userAvatarStyle(user)}>
             <img

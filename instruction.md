@@ -269,7 +269,7 @@ base url: http://localhost:3000/api
 
 Websocket endpoints
 
-baseUrl - ws://localhost:3000/ws
+baseUrl - ws://localhost:8080/ws
 
 1. baseUrl - Connect to the websocket server
 
