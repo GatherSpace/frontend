@@ -239,9 +239,11 @@ const SpaceView: React.FC = () => {
   const isMounted = useRef(true);
 
   const avatarRef = useRef<HTMLDivElement>(null);
+  const usersRef = useRef(users);
 
   // Fetch elements and space data
   useEffect(() => {
+    let isSubscribed = true;
     const fetchData = async () => {
       try {
         const elementsResponse = await fetchElements();
@@ -258,22 +260,25 @@ const SpaceView: React.FC = () => {
 
     fetchData();
     if (myUserId) {
-      const fetchUsers = async () => {
-        try {
-          const response = await fetchBulkUserData([myUserId]);
-          console.log("User data:", response);
-          setMyAvatarUrl(response[0].avatarUrl);
-        } catch (error) {
-          console.error("Error fetching user data:", error);
-        }
-      };
+      if (isSubscribed) {
+        const fetchUsers = async () => {
+          try {
+            const response = await fetchBulkUserData([myUserId]);
+            console.log("User data:", response);
+            setMyAvatarUrl(response[0].avatarUrl);
+          } catch (error) {
+            console.error("Error fetching user data:", error);
+          }
+        };
 
-      fetchUsers();
-      return () => {
-        isMounted.current = false;
-      };
+        fetchUsers();
+      }
     }
-  }, [location, myUserId, users]);
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, [location, myUserId]);
 
   // Websocket connection and event handling
   const mapUserWithAvatarUrl = async (user: UserPosition) => {
@@ -287,277 +292,43 @@ const SpaceView: React.FC = () => {
       avatarUrl,
     };
   };
-  /* useEffect(() => {
-    if (spaceId) {
-      
-      const handleWebSocketMessage = async (message: WebSocketMessage) => {
-        // if (!isMounted.current) return;
-
-        switch (message.type) {
-          case "space-joined":
-            console.log("Joined space:", message.payload);
-            setMyPosition({
-              x: message.payload.spawn.x,
-              y: message.payload.spawn.y,
-            });
-            setMyUserId(message.payload.userId);
-            Promise.all(message.payload.users.map(mapUserWithAvatarUrl)).then(
-              (users) => {
-                setUsers(users);
-              }
-            );
-            setUsers(users);
-            break;
-
-          case "user-joined":
-            console.log("User joined:");
-            const user = await mapUserWithAvatarUrl(message.payload);
-            console.log("User joined:", user);
-            setUsers((prevUsers) => [...prevUsers, user]);
-            break;
-          case "user-left":
-            setUsers((prevUsers) =>
-              prevUsers.filter((u) => u.userId !== message.payload.userId)
-            );
-            break;
-          case "movement":
-            if (message.payload.userId === myUserId) {
-              // Update the offset for smooth movement for the local user
-              /*setGridOffset((prevOffset) => ({
-                x:
-                  prevOffset.x -
-                  (message.payload.x - myPosition.x) * gridCellSize,
-                y:
-                  prevOffset.y -
-                  (message.payload.y - myPosition.y) * gridCellSize,
-              })); 
-              setMyPosition({
-                x: message.payload.x,
-                y: message.payload.y,
-              });
-            } else {
-              // Directly update positions for other users
-              setUsers((prevUsers) =>
-                prevUsers.map((user) =>
-                  user.userId === message.payload.userId
-                    ? { ...user, x: message.payload.x, y: message.payload.y }
-                    : user
-                )
-              );
-            }
-            break;
-          case "move-rejected":
-            console.log("Move rejected:", message.payload);
-            break;
-          default:
-            console.log("Unknown message type:", message);
-        }
-      };
-
-      wsService.getInstance()?.addEventListener("message", (event) => {
-        const message = JSON.parse(event.data) as WebSocketMessage;
-        console.log("Received message:", message);
-        handleWebSocketMessage(message);
-      });
-
-      // Join space after connection
-      if (wsService.getInstance() != null) {
-        wsService.getInstance().onopen = () => {
-          console.log("WebSocket Connected");
-          wsService.joinSpace(spaceId);
-        };
-      }
-      return () => {
-        wsService.disconnect();
-      };
-    }
-  }, [spaceId]);
-*/
-  // In your SpaceView component, replace the WebSocket useEffect with this:
-
-  // useEffect(() => {
-  //   if (!spaceId) return;
-
-  //   const handleWebSocketMessage = async (message: WebSocketMessage) => {
-  //     if (!isMounted.current) return;
-
-  //     switch (message.type) {
-  //       case "space-joined":
-  //         console.log("Joined space:", message.payload);
-  //         setMyPosition({
-  //           x: message.payload.spawn.x,
-  //           y: message.payload.spawn.y,
-  //         });
-  //         setMyUserId(message.payload.userId);
-  //         const usersWithAvatars = await Promise.all(
-  //           message.payload.users.map(mapUserWithAvatarUrl)
-  //         );
-  //         setUsers(usersWithAvatars);
-  //         break;
-
-  //       case "user-joined":
-  //         const newUser = await mapUserWithAvatarUrl(message.payload);
-  //         setUsers((prevUsers) => [...prevUsers, newUser]);
-  //         break;
-
-  //       case "user-left":
-  //         setUsers((prevUsers) =>
-  //           prevUsers.filter((u) => u.userId !== message.payload.userId)
-  //         );
-  //         break;
-
-  //       case "movement":
-  //         if (message.payload.userId === myUserId) {
-  //           setMyPosition({
-  //             x: message.payload.x,
-  //             y: message.payload.y,
-  //           });
-  //         } else {
-  //           setUsers((prevUsers) =>
-  //             prevUsers.map((user) =>
-  //               user.userId === message.payload.userId
-  //                 ? { ...user, x: message.payload.x, y: message.payload.y }
-  //                 : user
-  //             )
-  //           );
-  //         }
-  //         break;
-
-  //       case "movement-rejected":
-  //         setMyPosition({
-  //           x: message.payload.x,
-  //           y: message.payload.y,
-  //         });
-  //         break;
-  //     }
-  //   };
-
-  //   // Connect and join space
-  //   const initializeWebSocket = async () => {
-  //     try {
-  //       wsService.addMessageHandler(handleWebSocketMessage);
-  //       await wsService.connect();
-  //       await wsService.joinSpace(spaceId);
-  //     } catch (error) {
-  //       console.error("Failed to initialize WebSocket:", error);
-  //     }
-  //   };
-
-  //   initializeWebSocket();
-
-  //   // Cleanup
-  //   return () => {
-  //     isMounted.current = false;
-  //     wsService.removeMessageHandler(handleWebSocketMessage);
-  //     wsService.disconnect();
-  //   };
-  // }, [spaceId, myUserId, mapUserWithAvatarUrl]);
-
-  // In your SpaceView component, update the WebSocket useEffect:
-  /*
-  useEffect(() => {
-    if (!spaceId) return;
-
-    const handleWebSocketMessage = async (message: WebSocketMessage) => {
-      console.log("Handling message:", message);
-
-      switch (message.type) {
-        case "space-joined":
-          setMyPosition({
-            x: message.payload.spawn.x,
-            y: message.payload.spawn.y,
-          });
-          setMyUserId(message.payload.userId);
-          const usersWithAvatars = await Promise.all(
-            message.payload.users.map(mapUserWithAvatarUrl)
-          );
-          setUsers(usersWithAvatars);
-          break;
-
-        case "user-joined":
-          const newUser = await mapUserWithAvatarUrl(message.payload);
-          setUsers((prevUsers) => [...prevUsers, newUser]);
-          break;
-
-        case "user-left":
-          setUsers((prevUsers) =>
-            prevUsers.filter((u) => u.userId !== message.payload.userId)
-          );
-          break;
-
-        case "movement":
-          if (message.payload.userId === myUserId) {
-            setMyPosition({
-              x: message.payload.x,
-              y: message.payload.y,
-            });
-          } else {
-            setUsers((prevUsers) =>
-              prevUsers.map((user) =>
-                user.userId === message.payload.userId
-                  ? { ...user, x: message.payload.x, y: message.payload.y }
-                  : user
-              )
-            );
-          }
-          break;
-
-        case "movement-rejected":
-          setMyPosition({
-            x: message.payload.x,
-            y: message.payload.y,
-          });
-          break;
-      }
-    };
-
-    // Add message handler
-    wsService.addMessageHandler(handleWebSocketMessage);
-
-    // Set up connection and join space
-    const ws = wsService.getInstance();
-
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      wsService.joinSpace(spaceId);
-    } else if (ws) {
-      ws.addEventListener("open", () => {
-        wsService.joinSpace(spaceId);
-      });
-    }
-
-    // Cleanup
-    return () => {
-      wsService.removeMessageHandler(handleWebSocketMessage);
-    };
-  }, [spaceId, myUserId, mapUserWithAvatarUrl]); */
-
-  // In your SpaceView component, update the WebSocket useEffect:
 
   useEffect(() => {
     if (!spaceId) return;
 
     let isSubscribed = true;
+    let hasJoinedSpace = false;
 
     const handleWebSocketMessage = async (message: WebSocketMessage) => {
       if (!isSubscribed) return;
-
+      console.log("users", users);
+      console.log("My avatar URL:", myAvatarUrl);
       switch (message.type) {
         case "space-joined":
+          console.log("space-joined", message);
+
           setMyPosition({
             x: message.payload.spawn.x,
             y: message.payload.spawn.y,
           });
           setMyUserId(message.payload.userId);
-          const usersWithAvatars = await Promise.all(
-            message.payload.users.map(mapUserWithAvatarUrl)
-          );
-          if (isSubscribed) {
-            setUsers(usersWithAvatars);
+          hasJoinedSpace = true;
+          if (message.payload.users.length > 0) {
+            const usersWithAvatars = await Promise.all(
+              message.payload.users.map(mapUserWithAvatarUrl)
+            );
+            console.log("Users with avatars:", usersWithAvatars);
+            if (isSubscribed) {
+              setUsers(usersWithAvatars);
+            }
           }
+          console.log("Updated my position:", myPosition);
+          console.log("Updated users:", users);
           break;
 
         case "user-joined":
           const newUser = await mapUserWithAvatarUrl(message.payload);
+          console.log("New user joined:", newUser);
           if (isSubscribed) {
             setUsers((prevUsers) => [...prevUsers, newUser]);
           }
@@ -589,15 +360,13 @@ const SpaceView: React.FC = () => {
               )
             );
           }
+
+          console.log("Updated my position:", myPosition);
+          console.log("Updated users:", users);
+
           break;
 
         case "movement-rejected":
-          if (isSubscribed) {
-            setMyPosition({
-              x: message.payload.x,
-              y: message.payload.y,
-            });
-          }
           break;
       }
     };
@@ -617,38 +386,42 @@ const SpaceView: React.FC = () => {
     // Cleanup
     return () => {
       isSubscribed = false;
-      wsService.removeMessageHandler(handleWebSocketMessage);
+      if (hasJoinedSpace) {
+        wsService.disconnect();
+        wsService.removeMessageHandler(handleWebSocketMessage);
+      }
+      //
     };
-  }, [spaceId, myUserId]);
+  }, [spaceId]);
+  const positionRef = useRef(myPosition); // Ref to track the latest position
+
+  useEffect(() => {
+    positionRef.current = myPosition; // Keep ref in sync with state
+  }, [myPosition]);
   // Handle user movement with arrow keys
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent) => {
-      let newX = myPosition.x;
-      let newY = myPosition.y;
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    let { x, y } = positionRef.current;
 
-      switch (event.key) {
-        case "ArrowUp":
-          newY = Math.max(0, myPosition.y - 1);
-          break;
-        case "ArrowDown":
-          newY = Math.min((space?.height || 0) - 1, myPosition.y + 1);
-          break;
-        case "ArrowLeft":
-          newX = Math.max(0, myPosition.x - 1);
-          break;
-        case "ArrowRight":
-          newX = Math.min((space?.width || 0) - 1, myPosition.x + 1);
-          break;
-        default:
-          return; // Ignore other keys
-      }
+    switch (event.key) {
+      case "ArrowUp":
+        y -= Math.min();
+        break;
+      case "ArrowDown":
+        y += 1;
+        break;
+      case "ArrowLeft":
+        x -= 1;
+        break;
+      case "ArrowRight":
+        x += 1;
+        break;
+      default:
+        return; // Ignore other keys
+    }
 
-      if (newX !== myPosition.x || newY !== myPosition.y) {
-        wsService.updatePosition(newX, newY);
-      }
-    },
-    [myPosition, space]
-  );
+    console.log("Moving to:", x, y);
+    wsService.updatePosition(x, y);
+  }, []);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -762,17 +535,18 @@ const SpaceView: React.FC = () => {
     <div style={gridContainerStyle}>
       <div style={gridStyle}>
         {/* Render elements */}
-        {space?.elements?.map((element) => (
-          <img
-            key={element.id}
-            src={imageUrlWithElementId(element.elementId)}
-            alt={`Placed element ${element.id}`}
-            style={elementStyle(
-              element,
-              elementWidthAndHeight(element.elementId)
-            )}
-          />
-        ))}
+        {space &&
+          space?.elements?.map((element) => (
+            <img
+              key={element.id}
+              src={imageUrlWithElementId(element.elementId)}
+              alt={`Placed element ${element.id}`}
+              style={elementStyle(
+                element,
+                elementWidthAndHeight(element.elementId)
+              )}
+            />
+          ))}
 
         {/* Render my avatar */}
         <div ref={avatarRef} style={avatarStyle}>
@@ -780,15 +554,16 @@ const SpaceView: React.FC = () => {
         </div>
 
         {/* Render other users' avatars */}
-        {users.map((user) => (
-          <div key={user.userId} style={userAvatarStyle(user)}>
-            <img
-              src={user.avatarUrl}
-              alt="User Avatar"
-              style={avatarImageStyle}
-            />
-          </div>
-        ))}
+        {users &&
+          users.map((user) => (
+            <div key={user.userId} style={userAvatarStyle(user)}>
+              <img
+                src={user.avatarUrl}
+                alt="User Avatar"
+                style={avatarImageStyle}
+              />
+            </div>
+          ))}
       </div>
     </div>
   );
