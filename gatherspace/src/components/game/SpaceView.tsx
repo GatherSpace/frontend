@@ -241,6 +241,14 @@ const SpaceView: React.FC = () => {
   const avatarRef = useRef<HTMLDivElement>(null);
   const usersRef = useRef(users);
 
+  const myPositionRef = useRef(myPosition);
+  const myUserIdRef = useRef(myUserId);
+
+  useEffect(() => {
+    myPositionRef.current = myPosition;
+    myUserIdRef.current = myUserId;
+  }, [myPosition, myUserId]);
+
   // Fetch elements and space data
   useEffect(() => {
     let isSubscribed = true;
@@ -345,11 +353,17 @@ const SpaceView: React.FC = () => {
         case "movement":
           console.log("Received movement message:", message);
           if (!isSubscribed) return;
+          console.log("userId", myUserIdRef.current);
 
-          if (message.payload.userId === myUserId) {
-            setMyPosition({
-              x: message.payload.x,
-              y: message.payload.y,
+          if (message.payload.userId == myUserIdRef.current) {
+            setMyPosition((prev) => {
+              console.log("prev", prev);
+              console.log("message.payload", message.payload);
+              return {
+                ...prev,
+                x: message.payload.x,
+                y: message.payload.y,
+              };
             });
           } else {
             setUsers((prevUsers) =>
@@ -393,18 +407,15 @@ const SpaceView: React.FC = () => {
       //
     };
   }, [spaceId]);
-  const positionRef = useRef(myPosition); // Ref to track the latest position
+  const movementInProgress = useRef(false);
 
-  useEffect(() => {
-    positionRef.current = myPosition; // Keep ref in sync with state
-  }, [myPosition]);
   // Handle user movement with arrow keys
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    let { x, y } = positionRef.current;
+    let { x, y } = myPositionRef.current;
 
     switch (event.key) {
       case "ArrowUp":
-        y -= Math.min();
+        y -= 1;
         break;
       case "ArrowDown":
         y += 1;
@@ -420,7 +431,13 @@ const SpaceView: React.FC = () => {
     }
 
     console.log("Moving to:", x, y);
-    wsService.updatePosition(x, y);
+    // Set flag to indicate movement is in progress
+    movementInProgress.current = true;
+
+    // Update position via WebSocket and clear flag once done
+    wsService.updatePosition(x, y).finally(() => {
+      movementInProgress.current = false;
+    });
   }, []);
 
   useEffect(() => {
