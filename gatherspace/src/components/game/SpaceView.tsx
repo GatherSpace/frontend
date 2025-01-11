@@ -200,7 +200,11 @@ export default SpaceView; */
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation, useParams } from "react-router-dom";
-import { fetchElements, fetchBulkUserData } from "../../utils/api";
+import {
+  fetchElements,
+  fetchBulkUserData,
+  fetchSpaceDetails,
+} from "../../utils/api";
 import { wsService } from "../../services/WebSocketService";
 import { Space, Element, WebSocketMessage } from "../../types/api.types";
 
@@ -222,6 +226,10 @@ interface UserPosition {
 const SpaceView: React.FC = () => {
   const { spaceId } = useParams<{ spaceId: string }>();
   const [space, setSpace] = useState<Space | null>(null);
+  const [spaceWidthAndHeight, setSpaceWidthAndHeight] = useState({
+    width: 0,
+    height: 0,
+  });
   const [elements, setElements] = useState<Element[]>([]);
   const [users, setUsers] = useState<UserPosition[]>([]);
   const [myAvatarUrl, setMyAvatarUrl] = useState<string>("");
@@ -256,11 +264,20 @@ const SpaceView: React.FC = () => {
       try {
         const elementsResponse = await fetchElements();
         setElements(elementsResponse);
-
-        if (location.state && location.state.space) {
+        if (spaceId) {
+          const spaceResponse = await fetchSpaceDetails(spaceId);
+          console.log("Space:", spaceResponse);
+          let width = parseInt(spaceResponse?.dimensions?.split("x")[0] || "0");
+          let height = parseInt(
+            spaceResponse?.dimensions?.split("x")[1] || "0"
+          );
+          setSpaceWidthAndHeight({ width, height });
+          setSpace(spaceResponse);
+        }
+        /*if (location.state && location.state.space) {
           setSpace(location.state.space);
         }
-        console.log("Space:", location.state.space);
+        console.log("Space:", location.state.space); */
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -286,7 +303,7 @@ const SpaceView: React.FC = () => {
     return () => {
       isSubscribed = false;
     };
-  }, [location, myUserId]);
+  }, [location, myUserId, spaceId]);
 
   // Websocket connection and event handling
   const mapUserWithAvatarUrl = async (user: UserPosition) => {
@@ -478,15 +495,21 @@ const SpaceView: React.FC = () => {
   // Styles
   const gridContainerStyle: React.CSSProperties = {
     position: "relative",
+    width: "100vw", // Changed from 100vw to 100%
+    height: "calc(100vh - 72px)", // Assuming navbar is 64px high, adjust as needed
+    overflow: "hidden",
+  };
+  /*const gridContainerStyle: React.CSSProperties = {
+    position: "relative",
     width: "100vw",
     height: "100vh",
     overflow: "hidden",
   };
-
+*/
   const gridStyle: React.CSSProperties = {
     position: "absolute",
-    width: `${(space?.width || 0) * gridCellSize}px`,
-    height: `${(space?.height || 0) * gridCellSize}px`,
+    width: `${(spaceWidthAndHeight.width || 0) * gridCellSize}px`,
+    height: `${(spaceWidthAndHeight.height || 0) * gridCellSize}px`,
     // transform: `translate(${gridOffset.x}px, ${gridOffset.y}px)`,
 
     backgroundImage: `url(${space?.thumbnail})`,
