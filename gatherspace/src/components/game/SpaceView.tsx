@@ -207,6 +207,12 @@ import {
 } from "../../utils/api";
 import { wsService } from "../../services/WebSocketService";
 import { Space, Element, WebSocketMessage } from "../../types/api.types";
+import Chat from "./Chat";
+
+interface Message {
+  sender: string;
+  text: string;
+}
 
 interface SpaceElement {
   id: string;
@@ -243,6 +249,9 @@ const SpaceView: React.FC = () => {
   //   y: 0,
   // });
   const [gridCellSize, setGridCellSize] = useState(25);
+  const [messageUserId, setMessageUserId] = useState<string | null>(null);
+
+  const messageUserIdRef = useRef(messageUserId);
   const location = useLocation();
   const isMounted = useRef(true);
 
@@ -252,6 +261,10 @@ const SpaceView: React.FC = () => {
   const myPositionRef = useRef(myPosition);
   const myUserIdRef = useRef(myUserId);
   const spaceWidthAndHeightRef = useRef(spaceWidthAndHeight);
+
+  // for message component
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
 
   // Adjust gridCellSize based on viewport dimensions and ensure 30x30 cells
   useEffect(() => {
@@ -275,7 +288,8 @@ const SpaceView: React.FC = () => {
   useEffect(() => {
     myPositionRef.current = myPosition;
     myUserIdRef.current = myUserId;
-  }, [myPosition, myUserId]);
+    messageUserIdRef.current = messageUserId;
+  }, [myPosition, myUserId, messageUserId]);
 
   // Fetch elements and space data
   useEffect(() => {
@@ -420,7 +434,14 @@ const SpaceView: React.FC = () => {
           console.log("Updated users:", users);
 
           break;
-
+        case "message":
+          if (!isSubscribed) return;
+          console.log("Received message:", message);
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            { sender: "Other", text: message.payload.message },
+          ]);
+          break;
         case "movement-rejected":
           break;
       }
@@ -429,6 +450,7 @@ const SpaceView: React.FC = () => {
     // Set up websocket connection and join space
     const initializeWebSocket = async () => {
       try {
+        wsService.removeMessageHandler(handleWebSocketMessage);
         wsService.addMessageHandler(handleWebSocketMessage);
         await wsService.joinSpace(spaceId);
       } catch (error) {
@@ -436,14 +458,14 @@ const SpaceView: React.FC = () => {
       }
     };
 
-    initializeWebSocket();
+    if (isSubscribed) initializeWebSocket();
 
     // Cleanup
     return () => {
       isSubscribed = false;
       if (hasJoinedSpace) {
-        wsService.disconnect();
         wsService.removeMessageHandler(handleWebSocketMessage);
+        wsService.disconnect();
       }
       //
     };
@@ -490,7 +512,10 @@ const SpaceView: React.FC = () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [handleKeyDown]);
-
+  const handleUserClick = (user: UserPosition): void => {
+    setIsChatOpen(!isChatOpen);
+    setMessageUserId(user.userId);
+  };
   // Function to get element image URL and dimensions
   const imageUrlWithElementId = useCallback(
     (elementId: string) => {
@@ -604,6 +629,76 @@ const SpaceView: React.FC = () => {
     objectFit: "cover",
   };
 
+  const chatStyle: React.CSSProperties = {
+    position: "absolute",
+    top: "20px",
+    right: "20px",
+    width: "350px",
+    height: "100%",
+    overflow: "scroll",
+    border: "1px solid #ccc",
+    padding: "10px",
+    background: "#fff",
+  };
+  // const chatStyle = {
+  //   position: "relative",
+  //   width: "100%",
+  //   height: "400px",
+  //   border: "1px solid #ddd",
+  //   borderRadius: "8px",
+  //   boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+  //   padding: "20px",
+  //   backgroundColor: "#f9f9f9",
+  //   overflow: "hidden",
+  // };
+
+  const messageListStyle: React.CSSProperties = {
+    listStyle: "none",
+    padding: "0",
+    margin: "0",
+    height: "calc(100% - 60px)",
+    overflowY: "auto",
+    scrollbarWidth: "thin",
+  };
+
+  const messageStyle = (sender: string): React.CSSProperties => ({
+    padding: "10px",
+    margin: "5px 0",
+    borderRadius: "12px",
+    maxWidth: "70%",
+    color: "#fff",
+    alignSelf: sender === "You" ? "flex-end" : "flex-start",
+    backgroundColor: sender === "You" ? "#4CAF50" : "#007BFF",
+  });
+
+  const inputStyle: React.CSSProperties = {
+    flex: "1",
+    padding: "10px",
+    borderRadius: "4px",
+    border: "1px solid #ccc",
+    outline: "none",
+    fontSize: "14px",
+  };
+
+  const buttonStyle: React.CSSProperties = {
+    padding: "10px 15px",
+    border: "none",
+    borderRadius: "4px",
+    backgroundColor: "#007BFF",
+    color: "#fff",
+    cursor: "pointer",
+    fontSize: "14px",
+  };
+
+  const formStyle: React.CSSProperties = {
+    position: "absolute",
+    bottom: "20px",
+    width: "100%",
+    paddingRight: "10px",
+    display: "flex",
+    gap: "10px",
+  };
+
   return (
     <div style={gridContainerStyle}>
       <div style={gridStyle}>
@@ -629,7 +724,11 @@ const SpaceView: React.FC = () => {
         {/* Render other users' avatars */}
         {users &&
           users.map((user) => (
-            <div key={user.userId} style={userAvatarStyle(user)}>
+            <div
+              key={user.userId}
+              style={userAvatarStyle(user)}
+              onClick={() => handleUserClick(user)}
+            >
               <img
                 src={user.avatarUrl}
                 alt="User Avatar"
@@ -638,6 +737,48 @@ const SpaceView: React.FC = () => {
             </div>
           ))}
       </div>
+
+      {isChatOpen && (
+        <div style={chatStyle}>
+          <h2>Chat</h2>
+          <ul style={messageListStyle}>
+            {messages.map((message, index) => (
+              <li
+                key={index}
+                style={messageStyle(message.sender)}
+                className={message.sender === "You" ? "you" : "other"}
+              >
+                <strong>{message.sender}:</strong> {message.text}
+              </li>
+            ))}
+          </ul>
+
+          <form
+            style={formStyle}
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const sender = "You";
+              const text = (e.target as HTMLFormElement).message.value;
+              await wsService.sendChatMessage({
+                userId: messageUserIdRef.current || "",
+                message: text,
+              });
+              setMessages([...messages, { sender, text }]);
+              (e.target as HTMLFormElement).reset();
+            }}
+          >
+            <input
+              type="text"
+              name="message"
+              placeholder="Type your message..."
+              style={inputStyle}
+            />
+            <button type="submit" style={buttonStyle}>
+              Send
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
 };

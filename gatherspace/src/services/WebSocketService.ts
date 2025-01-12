@@ -291,6 +291,18 @@ export class WebSocketService {
     );
   }
 
+  async sendChatMessage(message: { userId: string; message: string }) {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      throw new Error("WebSocket not connected");
+    }
+    this.ws.send(
+      JSON.stringify({
+        type: "message",
+        payload: message,
+      })
+    );
+  }
+
   async updatePosition(x: number, y: number) {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       throw new Error("WebSocket not connected");
