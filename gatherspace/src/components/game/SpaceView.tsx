@@ -242,7 +242,7 @@ const SpaceView: React.FC = () => {
   //   x: 0,
   //   y: 0,
   // });
-  const gridCellSize = 25;
+  const [gridCellSize, setGridCellSize] = useState(25);
   const location = useLocation();
   const isMounted = useRef(true);
 
@@ -251,6 +251,26 @@ const SpaceView: React.FC = () => {
 
   const myPositionRef = useRef(myPosition);
   const myUserIdRef = useRef(myUserId);
+  const spaceWidthAndHeightRef = useRef(spaceWidthAndHeight);
+
+  // Adjust gridCellSize based on viewport dimensions and ensure 30x30 cells
+  useEffect(() => {
+    const updateGridCellSize = () => {
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      const cellSize = Math.min(viewportWidth / 15, viewportHeight / 15);
+
+      setGridCellSize(cellSize);
+    };
+
+    updateGridCellSize();
+    window.addEventListener("resize", updateGridCellSize);
+
+    return () => {
+      window.removeEventListener("resize", updateGridCellSize);
+    };
+  }, []);
 
   useEffect(() => {
     myPositionRef.current = myPosition;
@@ -304,6 +324,10 @@ const SpaceView: React.FC = () => {
       isSubscribed = false;
     };
   }, [location, myUserId, spaceId]);
+
+  useEffect(() => {
+    spaceWidthAndHeightRef.current = spaceWidthAndHeight;
+  }, [spaceWidthAndHeight]);
 
   // Websocket connection and event handling
   const mapUserWithAvatarUrl = async (user: UserPosition) => {
@@ -432,16 +456,19 @@ const SpaceView: React.FC = () => {
 
     switch (event.key) {
       case "ArrowUp":
-        y -= 1;
+        y = Math.max(0, y - 1);
         break;
       case "ArrowDown":
-        y += 1;
+        console.log("Space width:", spaceWidthAndHeight.width);
+        console.log("y + 1", y + 1);
+        if (spaceWidthAndHeightRef.current.width == 0) return;
+        y = Math.min(spaceWidthAndHeightRef.current.width - 1, y + 1);
         break;
       case "ArrowLeft":
-        x -= 1;
+        x = Math.max(0, x - 1);
         break;
       case "ArrowRight":
-        x += 1;
+        x = Math.min(spaceWidthAndHeightRef.current.height - 1, x + 1);
         break;
       default:
         return; // Ignore other keys
@@ -498,6 +525,7 @@ const SpaceView: React.FC = () => {
     width: "100vw", // Changed from 100vw to 100%
     height: "calc(100vh - 72px)", // Assuming navbar is 64px high, adjust as needed
     overflow: "hidden",
+    backgroundColor: "grey",
   };
   /*const gridContainerStyle: React.CSSProperties = {
     position: "relative",
@@ -511,10 +539,15 @@ const SpaceView: React.FC = () => {
     width: `${(spaceWidthAndHeight.width || 0) * gridCellSize}px`,
     height: `${(spaceWidthAndHeight.height || 0) * gridCellSize}px`,
     // transform: `translate(${gridOffset.x}px, ${gridOffset.y}px)`,
+    transform: `translate(
+      ${-myPosition.x * gridCellSize + window.innerWidth / 2}px,
+      ${-myPosition.y * gridCellSize + window.innerHeight / 2}px
+    )`,
 
     backgroundImage: `url(${space?.thumbnail})`,
     backgroundSize: "cover",
     backgroundPosition: "center",
+    border: "3px solid #ccc",
     /*backgroundImage: `
         repeating-linear-gradient(
           90deg,
@@ -580,7 +613,7 @@ const SpaceView: React.FC = () => {
             <img
               key={element.id}
               src={imageUrlWithElementId(element.elementId)}
-              alt={`Placed element ${element.id}`}
+              alt={`Placed element ${element.id} at x: ${element.x}, y: ${element.y}`}
               style={elementStyle(
                 element,
                 elementWidthAndHeight(element.elementId)

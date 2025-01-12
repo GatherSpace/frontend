@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import "./App.css";
 import { ChakraProvider } from "@chakra-ui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -7,6 +8,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useNavigate,
 } from "react-router-dom";
 import { useAuthStore } from "./store/useAuthStore";
 import AuthLayout from "./layouts/AuthLayout";
@@ -36,12 +38,15 @@ interface LoggedInCheckProps {
 
 const LoggedInCheck = ({ element, path }: LoggedInCheckProps) => {
   const isAuthenticated = Cookies.get("token");
+  const navigate = useNavigate();
 
-  if (isAuthenticated != null && path === "/") {
-    return <Navigate to="/dashboard" replace />;
-  }
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
-  return element;
+  return isAuthenticated ? null : element;
 };
 
 const App = () => {
