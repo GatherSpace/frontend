@@ -730,7 +730,7 @@ const SpaceView: React.FC = () => {
               onClick={() => handleUserClick(user)}
             >
               <img
-                src={user.avatarUrl}
+                src={user.avatarUrl || ""}
                 alt="User Avatar"
                 style={avatarImageStyle}
               />
