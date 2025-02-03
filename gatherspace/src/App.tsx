@@ -10,7 +10,7 @@ import {
   Navigate,
   useNavigate,
 } from "react-router-dom";
-import { useAuthStore } from "./store/useAuthStore";
+
 import AuthLayout from "./layouts/AuthLayout";
 import SpaceLayout from "./layouts/SpaceLayout";
 import LandingLayout from "./layouts/LandingLayout";
@@ -23,12 +23,16 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ element }: ProtectedRouteProps) => {
-  const isAuthenticated = Cookies.get("token");
+  const isAuthenticated = Cookies.get("accessToken") && Cookies.get("refreshToken");
+  const navigate = useNavigate();
 
-  if (!isAuthenticated) {
-    return <Navigate to="/auth/signin" replace />;
-  }
-  return element;
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/auth/signin", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
+  return isAuthenticated ? element : null;
 };
 
 interface LoggedInCheckProps {
@@ -37,7 +41,7 @@ interface LoggedInCheckProps {
 }
 
 const LoggedInCheck = ({ element, path }: LoggedInCheckProps) => {
-  const isAuthenticated = Cookies.get("token");
+  const isAuthenticated = Cookies.get("accessToken") && Cookies.get("refreshToken");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -59,18 +63,15 @@ const App = () => {
               path="/dashboard/*"
               element={<ProtectedRoute element={<DashboardLayout />} />}
             />
-
             <Route
               path="/"
               element={<LoggedInCheck element={<LandingLayout />} path="/" />}
             />
             <Route path="/auth/*" element={<AuthLayout />} />
-
             <Route
               path="/space/*"
               element={<ProtectedRoute element={<SpaceLayout />} />}
             />
-
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>

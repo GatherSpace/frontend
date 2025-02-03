@@ -5,6 +5,7 @@ import {
   Avatar,
   Space,
   AuthResponse,
+  LoginResponse, 
   Map,
   createSpaceResponse,
 } from "../types/api.types";
@@ -16,10 +17,19 @@ const api = axios.create({
 });
 
 // Request interceptor to add auth token
-api.interceptors.request.use((config) => {
-  const token = Cookies.get("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+api.interceptors.request.use(async (config) => {
+  let accessToken = Cookies.get("accessToken");
+  
+  if (!accessToken) {
+    try {
+      accessToken = await refreshAccessToken();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
   }
   return config;
 });
@@ -35,6 +45,32 @@ const handleApiError = (error: AxiosError) => {
     throw new ApiError(error.response.status, error.response.data as string);
   }
   throw new Error("Network error");
+};
+
+const refreshAccessToken = async () => {
+  const refreshToken = Cookies.get("refreshToken");
+  if (!refreshToken) {
+    throw new Error("No refresh token available");
+  }
+
+  try {
+    const response = await axios.post(`${BASE_URL}/refresh-token`, {}, {
+      headers: { Authorization: `Bearer ${refreshToken}` }
+    });
+    
+    const { accessToken } = response.data;
+    Cookies.set("accessToken", accessToken, {
+      path: "/",
+      secure: true,
+      sameSite: "strict"
+    });
+    
+    return accessToken;
+  } catch (error) {
+    Cookies.remove("accessToken");
+    Cookies.remove("refreshToken");
+    throw new Error("Failed to refresh access token");
+  }
 };
 
 export const auth = {
@@ -54,24 +90,43 @@ export const auth = {
       return handleApiError(error as AxiosError);
     }
   },
-  signin: async (username: string, password: string): Promise<AuthResponse> => {
+  signin: async (username: string, password: string): Promise<LoginResponse> => {
     try {
-      const response = await api.post<AuthResponse>("/signin", {
+      const response = await api.post<LoginResponse>("/login", {
         username,
         password,
       });
-      Cookies.set("token", response.data.token, {
+      
+      const { accessToken, refreshToken } = response.data;
+      
+      Cookies.set("accessToken", accessToken, {
         path: "/",
         secure: true,
         sameSite: "strict",
       });
+      
+      Cookies.set("refreshToken", refreshToken, {
+        path: "/",
+        secure: true,
+        sameSite: "strict",
+      });
+      
       return response.data;
     } catch (error) {
       return handleApiError(error as AxiosError);
     }
   },
-  signout: () => {
-    Cookies.remove("token");
+  signout: async () => {
+    const refreshToken = Cookies.get("refreshToken");
+    if (refreshToken) {
+      try {
+        await api.post(`/usersessions/invalidate/${refreshToken}`);
+      } catch (error) {
+        console.error("Error invalidating session:", error);
+      }
+    }
+    Cookies.remove("accessToken");
+    Cookies.remove("refreshToken");
   },
 };
 

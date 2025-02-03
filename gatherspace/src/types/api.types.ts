@@ -3,6 +3,11 @@ export interface AuthResponse {
   userId: string;
 }
 
+export interface LoginResponse {
+  accessToken: string;
+  refreshToken: string;
+}
+
 export interface Element {
   id?: string;
   width: number;
