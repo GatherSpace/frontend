@@ -523,7 +523,7 @@ const EditMap: React.FC<EditMapProps> = ({
             <div style={canvasStyle}>
               <img
                 src={mapDetails.thumbnail}
-                alt="Map background"
+                alt=""
                 style={mainImageStyle}
                 draggable={false}
               />
