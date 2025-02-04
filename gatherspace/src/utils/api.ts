@@ -16,8 +16,13 @@ const api = axios.create({
   baseURL: BASE_URL,
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token except for auth endpoints
 api.interceptors.request.use(async (config) => {
+  // Skip token check for authentication endpoints
+  if (config.url === '/signup' || config.url === '/login') {
+    return config;
+  }
+
   let accessToken = Cookies.get("accessToken");
   
   if (!accessToken) {
@@ -34,7 +39,7 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
-class ApiError extends Error {
+export class ApiError extends Error {
   constructor(public status: number, message: string) {
     super(message);
   }
@@ -43,8 +48,13 @@ class ApiError extends Error {
 const handleApiError = (error: AxiosError) => {
   if (error.response) {
     throw new ApiError(error.response.status, error.response.data as string);
+  } else if (error.request) {
+    // The request was made but no response was received
+    throw new ApiError(0, "No response from server. Please check your internet connection.");
+  } else {
+    // Something happened in setting up the request
+    throw new ApiError(0, `Request setup failed: ${error.message}`);
   }
-  throw new Error("Network error");
 };
 
 const refreshAccessToken = async () => {

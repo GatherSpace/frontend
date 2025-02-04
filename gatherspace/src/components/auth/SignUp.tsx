@@ -44,6 +44,7 @@ export default function SignUp() {
         duration: 3000,
         isClosable: true,
       });
+      console.log(error)
     } finally {
       setIsLoading(false);
     }
