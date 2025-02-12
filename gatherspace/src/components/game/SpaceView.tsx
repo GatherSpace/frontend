@@ -345,15 +345,20 @@ const SpaceView: React.FC = () => {
 
   // Websocket connection and event handling
   const mapUserWithAvatarUrl = async (user: UserPosition) => {
-    const avatarUrl = await fetchBulkUserData([user.userId]).then(
-      (response) => {
-        return response[0].avatarUrl;
-      }
-    );
-    return {
-      ...user,
-      avatarUrl,
-    };
+    try {
+      const response = await fetchBulkUserData([user.userId]);
+      const avatarUrl = response[0]?.avatarUrl || "https://www.gravatar.com/avatar/default?d=mp";
+      return {
+        ...user,
+        avatarUrl,
+      };
+    } catch (error) {
+      console.error("Error fetching user avatar:", error);
+      return {
+        ...user,
+        avatarUrl: "https://www.gravatar.com/avatar/default?d=mp",
+      };
+    }
   };
 
   useEffect(() => {
@@ -520,7 +525,7 @@ const SpaceView: React.FC = () => {
   const imageUrlWithElementId = useCallback(
     (elementId: string) => {
       const element = elements.find((el) => el.id === elementId);
-      return element ? element.imageUrl : "";
+      return element ? element.imageUrl : "https://www.gravatar.com/avatar/default?d=mp";
     },
     [elements]
   );
@@ -730,8 +735,8 @@ const SpaceView: React.FC = () => {
               onClick={() => handleUserClick(user)}
             >
               <img
-                src={user.avatarUrl || ""}
-                alt="User Avatar"
+                src={user.avatarUrl || "https://www.gravatar.com/avatar/default?d=mp"}
+                alt={`User ${user.userId} Avatar`}
                 style={avatarImageStyle}
               />
             </div>

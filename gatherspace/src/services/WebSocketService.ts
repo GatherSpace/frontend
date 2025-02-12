@@ -280,7 +280,7 @@ export class WebSocketService {
       throw new Error("WebSocket not connected");
     }
 
-    const token = Cookies.get("token");
+    const token = Cookies.get("accessToken");
     if (!token) throw new Error("Token not found");
 
     this.ws.send(
