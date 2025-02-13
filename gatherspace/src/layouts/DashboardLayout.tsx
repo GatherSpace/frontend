@@ -9,9 +9,18 @@ import {
   Stack,
   Text,
   useColorModeValue,
+  useDisclosure,
+  Button,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
 } from "@chakra-ui/react";
+import React from "react";
 import { Link as RouterLink, Routes, Route, Navigate } from "react-router-dom";
-import { FiHome, FiMap, FiGrid, FiUser, FiPlusSquare } from "react-icons/fi";
+import { FiHome, FiMap, FiGrid, FiUser, FiPlusSquare, FiLogOut } from "react-icons/fi";
 import SpaceManager from "../components/space/SpaceManager";
 import logo from "../assets/logo.png";
 import CreateMap from "../components/Map/CreateMap";
@@ -21,13 +30,17 @@ import ListMap from "../components/Map/ListMap";
 import CreateAvatar from "../components/avatar/CreateAvatar";
 import CreateSpace from "../components/space/CreateSpace";
 import EditSpace from "../components/space/EditSpace";
+import { auth } from "../utils/api";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../store/useAuthStore";
 interface NavItemProps {
   icon: any;
   children: string;
   to: string;
+  onClick?: () => void;
 }
 
-const NavItem = ({ icon, children, to }: NavItemProps) => {
+const NavItem = ({ icon, children, to, onClick }: NavItemProps) => {
   const activeBg = useColorModeValue("gray.100", "gray.700");
 
   return (
@@ -36,6 +49,7 @@ const NavItem = ({ icon, children, to }: NavItemProps) => {
       to={to}
       style={{ textDecoration: "none" }}
       _focus={{ boxShadow: "none" }}
+      onClick={onClick}
     >
       <Flex
         align="center"
@@ -67,6 +81,17 @@ const NavItem = ({ icon, children, to }: NavItemProps) => {
 const DashboardLayout = () => {
   const bg = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.700");
+  const navigate = useNavigate();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const signout = useAuthStore((state) => state.signout);
+  const userRole = useAuthStore((state) => state.userRole);
+  const cancelRef = React.useRef<HTMLButtonElement>(null);
+
+  const handleLogout = () => {
+    signout();
+    onClose();
+    navigate("/auth/signin");
+  };
 
   return (
     <Flex minH="100vh" bg="gray.50" minW="100vw">
@@ -78,6 +103,8 @@ const DashboardLayout = () => {
         borderRightColor={borderColor}
         position="fixed"
         h="full"
+        display="flex"
+        flexDirection="column"
       >
         <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
           <Image src={logo} alt="GatherSpace Logo" h="60px" />
@@ -89,16 +116,52 @@ const DashboardLayout = () => {
           <NavItem icon={FiMap} to="/dashboard/maps">
             Maps
           </NavItem>
-          <NavItem icon={FiGrid} to="/dashboard/element">
-            Elements
-          </NavItem>
+          {userRole === "Admin" && (
+            <NavItem icon={FiGrid} to="/dashboard/element">
+              Elements
+            </NavItem>
+          )}
           <NavItem icon={FiUser} to="/dashboard/avatar">
             Avatars
           </NavItem>
-          <NavItem icon={FiPlusSquare} to="/dashboard/createMap">
-            Create Map
-          </NavItem>
+          {userRole === "Admin" && (
+            <NavItem icon={FiPlusSquare} to="/dashboard/createMap">
+              Create Map
+            </NavItem>
+          )}
         </Stack>
+        <Box mt="auto" mb={4}>
+          <NavItem icon={FiLogOut} to="#" onClick={onOpen}>
+            Logout
+          </NavItem>
+        </Box>
+
+        <AlertDialog
+          isOpen={isOpen}
+          leastDestructiveRef={cancelRef}
+          onClose={onClose}
+        >
+          <AlertDialogOverlay>
+            <AlertDialogContent>
+              <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                Logout Confirmation
+              </AlertDialogHeader>
+
+              <AlertDialogBody>
+                Are you sure you want to logout?
+              </AlertDialogBody>
+
+              <AlertDialogFooter>
+                <Button ref={cancelRef} onClick={onClose}>
+                  Cancel
+                </Button>
+                <Button colorScheme="red" onClick={handleLogout} ml={3}>
+                  Logout
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialogOverlay>
+        </AlertDialog>
       </Box>
 
       {/* Main Content */}

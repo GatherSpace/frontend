@@ -15,10 +15,12 @@ import { createAvatar, fetchAvatars } from "../../utils/api";
 import { Avatar } from "../../types/api.types";
 import { UNSAFE_createClientRoutesWithHMRRevalidationOptOut } from "react-router-dom";
 import AvatarComponent from "./AvatarComponent";
+import { useAuthStore } from "../../store/useAuthStore";
 
 const CreateAvatar = () => {
   const toast = useToast();
   const [avatars, setAvatars] = useState<Avatar[]>([]);
+  const userRole = useAuthStore((state) => state.userRole);
   const [formData, setFormData] = useState<Avatar>({
     imageUrl: "",
     name: "",
@@ -71,8 +73,10 @@ const CreateAvatar = () => {
 
   return (
     <Box maxW="container.md" mx="auto">
-      <Heading mb={6}>Create Avatar</Heading>
-      <form onSubmit={handleSubmit}>
+      {userRole === "Admin" && (
+        <>
+          <Heading mb={6}>Create Avatar</Heading>
+          <form onSubmit={handleSubmit}>
         <VStack spacing={4} align="stretch">
           <FormControl isRequired>
             <FormLabel>Avatar URL</FormLabel>
@@ -101,7 +105,7 @@ const CreateAvatar = () => {
           </Button>
         </VStack>
       </form>
-
+</>)}
       <Box maxW="container.md" mx="auto">
         <Heading mb={6}>Avatars</Heading>
         <Grid templateColumns="repeat(auto-fill, minmax(250px, 1fr))" gap={4}>

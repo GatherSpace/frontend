@@ -6,6 +6,7 @@ import { ApiError } from "../utils/api";
 interface AuthState {
   isAuthenticated: boolean;
   error: string | null;
+  userRole: "Admin" | "User" | null;
   signin: (username: string, password: string) => Promise<void>;
   signup: (username: string, password: string, role: "Admin" | "User") => Promise<void>;
   signout: () => void;
@@ -15,10 +16,17 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   error: null,
+  userRole: null,
   signin: async (username: string, password: string) => {
     try {
       const data = await auth.signin(username, password);
-      set({ isAuthenticated: true, error: null });
+      const token = data.accessToken; 
+      if (token) {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        console.log(payload);
+        console.log(payload.role);
+        set({ isAuthenticated: true, error: null, userRole: payload.role });
+      }
     } catch (error) {
       const errorMessage = error instanceof ApiError
         ? error.message
@@ -41,7 +49,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
   signout: () => {
     auth.signout();
-    set({ isAuthenticated: false, error: null });
+    set({ isAuthenticated: false, error: null, userRole: null });
   },
   clearError: () => set({ error: null })
 }));
