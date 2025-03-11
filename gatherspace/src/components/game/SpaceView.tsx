@@ -347,7 +347,9 @@ const SpaceView: React.FC = () => {
   const mapUserWithAvatarUrl = async (user: UserPosition) => {
     try {
       const response = await fetchBulkUserData([user.userId]);
-      const avatarUrl = response[0]?.avatarUrl || "https://www.gravatar.com/avatar/default?d=mp";
+      const avatarUrl =
+        response[0]?.avatarUrl ||
+        "https://www.gravatar.com/avatar/default?d=mp";
       return {
         ...user,
         avatarUrl,
@@ -447,6 +449,7 @@ const SpaceView: React.FC = () => {
             { sender: "Other", text: message.payload.message },
           ]);
           break;
+
         case "movement-rejected":
           break;
       }
@@ -511,6 +514,11 @@ const SpaceView: React.FC = () => {
     });
   }, []);
 
+  const onChatClose = () => {
+    setIsChatOpen(!isChatOpen);
+    setMessageUserId(null);
+  };
+
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
     return () => {
@@ -525,7 +533,9 @@ const SpaceView: React.FC = () => {
   const imageUrlWithElementId = useCallback(
     (elementId: string) => {
       const element = elements.find((el) => el.id === elementId);
-      return element ? element.imageUrl : "https://www.gravatar.com/avatar/default?d=mp";
+      return element
+        ? element.imageUrl
+        : "https://www.gravatar.com/avatar/default?d=mp";
     },
     [elements]
   );
@@ -735,7 +745,10 @@ const SpaceView: React.FC = () => {
               onClick={() => handleUserClick(user)}
             >
               <img
-                src={user.avatarUrl || "https://www.gravatar.com/avatar/default?d=mp"}
+                src={
+                  user.avatarUrl ||
+                  "https://www.gravatar.com/avatar/default?d=mp"
+                }
                 alt={`User ${user.userId} Avatar`}
                 style={avatarImageStyle}
               />
@@ -745,7 +758,18 @@ const SpaceView: React.FC = () => {
 
       {isChatOpen && (
         <div style={chatStyle}>
-          <h2>Chat</h2>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <h2>Chat</h2>
+            <p onClick={onChatClose} style={{ cursor: "pointer" }}>
+              X
+            </p>
+          </div>
           <ul style={messageListStyle}>
             {messages.map((message, index) => (
               <li
@@ -764,11 +788,14 @@ const SpaceView: React.FC = () => {
               e.preventDefault();
               const sender = "You";
               const text = (e.target as HTMLFormElement).message.value;
+              // send message to websocket
               await wsService.sendChatMessage({
                 userId: messageUserIdRef.current || "",
                 message: text,
               });
+              // setting my own message for interface
               setMessages([...messages, { sender, text }]);
+              // need to check
               (e.target as HTMLFormElement).reset();
             }}
           >
